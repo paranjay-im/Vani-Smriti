@@ -1,0 +1,26 @@
+{
+  "name": "gc-context-layer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Global Context: a GLID-keyed context graph (long-term, short-term and reasoning memory) that renders seller.md / buyer.md for the VANI bot",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node --max-old-space-size=4096 cli.js build",
+    "demo": "node --max-old-space-size=4096 cli.js demo",
+    "freshness": "node --max-old-space-size=4096 cli.js freshness",
+    "serve": "node --max-old-space-size=4096 cli.js serve",
+    "test": "node --test",
+    "neo4j:up": "docker compose up -d neo4j",
+    "neo4j:test:up": "docker compose --profile test up -d neo4j-test",
+    "neo4j:down": "docker compose down",
+    "parity": "node --max-old-space-size=4096 tools/parity.mjs",
+    "tunnel": "npx -y cloudflared@0.7.3 tunnel --no-autoupdate --url http://localhost:8787"
+  },
+  "optionalDependencies": {
+    "@anthropic-ai/sdk": "^0.132.1",
+    "neo4j-driver": "^6.2.0"
+  }
+}

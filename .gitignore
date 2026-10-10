@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Generated output: rebuilt by `npm run build` / `npm run demo` (about 45 MB, 10,000 files)
+out/
+
+# Secrets and machine-local settings (copy .env.example to .env)
+.env
+.env.*
+!.env.example
+
+# Runtime state written while using the tool (replay logs of the test console and the demo)
+store/ui_events.jsonl
+store/demo_events.jsonl
+store/sarvam_payloads.jsonl
+
+# Temp files from atomic writes and from tooling
+*.tmp
+*.log
+npm-debug.log*
+
+# Developer documentation kept local (remove this line to ship docs/)
+docs/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+store/sarvam_test_seller.txt

@@ -1,0 +1,79 @@
+{
+  "_note": "Seller/buyer lines are SYNTHETIC, written for the demo. Everything the bot says comes from the context file and the policy layer.",
+  "seller": {
+    "245234426": {
+      "story": "PT More Enterprises (Indore). VANI fixed a meeting on 18 Sep and the seller declined paid plans; a Bhopal buyer's enquiry from 1 Oct is still unanswered. On the call the seller is driving and asks for WhatsApp; the next WhatsApp message resumes exactly there.",
+      "voice": {
+        "at": "2026-10-03 11:30:00",
+        "direction": "outbound",
+        "lines": [
+          "Haan ji, bol raha hoon. Meeting ho gayi thi, executive aaye the.",
+          "Achha, kaunsi enquiry?",
+          "Abhi gaadi chala raha hoon, WhatsApp pe bhej do."
+        ]
+      },
+      "whatsapp": {
+        "at": "2026-10-03 13:10:00",
+        "direction": "outbound",
+        "lines": [
+          "Free size heel protector 45 rupees per pair, MOQ 100 pair"
+        ]
+      }
+    },
+    "93557756": {
+      "story": "Visionary Style Enterprise (Surat). VANI called 21 times; on 18 Sep the seller asked IndiaMART to stop calling and said an executive had already visited. A Surat buyer has been waiting since 1 Oct. VANI's outbound call is blocked by policy; when the seller writes in on WhatsApp, VANI acknowledges the request and goes straight to the waiting buyer.",
+      "voice": {
+        "at": "2026-10-03 11:30:00",
+        "direction": "outbound",
+        "lines": []
+      },
+      "whatsapp": {
+        "at": "2026-10-03 18:40:00",
+        "direction": "inbound",
+        "lines": [
+          "Hi",
+          "Haan batao",
+          "Small quantity ke liye 5 piece ka 1450 rupees, courier extra"
+        ]
+      }
+    },
+    "272316904": {
+      "story": "Inde Electricals (Ahmedabad), paid CATALOG seller who buys leads. A 30 Sep enquiry for a brazing rod is unanswered. On the call the seller gives the rate and asks for a WhatsApp summary; WhatsApp picks up the call instead of starting over.",
+      "voice": {
+        "at": "2026-10-03 12:00:00",
+        "direction": "outbound",
+        "lines": [
+          "Haan ji. Rahul ji se baat ho gayi thi, plan bhi le liya hai. Kaunsi enquiry?",
+          "Harris rod 1850 rupees per kg, MOQ 5 kg. Baaki ka summary WhatsApp pe bhej dena."
+        ]
+      },
+      "whatsapp": {
+        "at": "2026-10-03 12:20:00",
+        "direction": "outbound",
+        "lines": [
+          "Thik hai, thank you"
+        ]
+      }
+    }
+  },
+  "buyer": {
+    "120622712": {
+      "story": "Buyer Ani (Kanpur). A seller asked them a question they never answered, and another enquiry is still waiting on a seller. The call picks up the seller's question; the buyer asks for suppliers on WhatsApp and the chat resumes there.",
+      "voice": {
+        "at": "2026-10-03 16:00:00",
+        "direction": "outbound",
+        "lines": [
+          "Quantity 200 piece chahiye, delivery Kanpur",
+          "Baaki suppliers ki list WhatsApp pe bhej dena"
+        ]
+      },
+      "whatsapp": {
+        "at": "2026-10-03 16:30:00",
+        "direction": "outbound",
+        "lines": [
+          "Ok thank you"
+        ]
+      }
+    }
+  }
+}

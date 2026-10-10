@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VANI Context Console</title>
+<style>
+:root{
+  --bg:#f5f5f2; --panel:#ffffff; --ink:#1c1c1a; --muted:#6b6a64; --line:#deddd6; --soft:#f0efea;
+  --accent:#2f5fa7; --accent-ink:#ffffff; --ok:#1f7a4d; --warn:#9a5b00; --bad:#b3261e;
+  --bot:#eef3fb; --user:#e9f6ee; --code:#f6f6f3;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#141413; --panel:#1d1d1b; --ink:#ebeae4; --muted:#a09f98; --line:#34332f; --soft:#262623;
+    --accent:#8fb3ec; --accent-ink:#10233f; --ok:#6fcf9c; --warn:#f0b35a; --bad:#ff8a80;
+    --bot:#1f2a3a; --user:#1d3226; --code:#232321;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;align-items:center;gap:16px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:2}
+header h1{font-size:16px;margin:0}
+header .sub{color:var(--muted);font-size:12.5px}
+header .sp{flex:1}
+main{display:grid;grid-template-columns:320px minmax(360px,1fr) minmax(380px,1.1fr);gap:12px;padding:12px;height:calc(100vh - 56px)}
+@media (max-width:1100px){main{grid-template-columns:1fr;height:auto}}
+.col{display:flex;flex-direction:column;gap:12px;min-height:0;overflow:auto}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+.card h2{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 8px}
+button,select,input,textarea{font:inherit;color:inherit}
+button{background:var(--soft);border:1px solid var(--line);border-radius:7px;padding:6px 10px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:disabled{opacity:.5;cursor:not-allowed}
+select,input,textarea{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:6px 8px;width:100%}
+.row{display:flex;gap:6px;align-items:center}
+.row > *{flex:1}
+.row > button{flex:0 0 auto}
+.samples{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow:auto}
+.sample{text-align:left;display:block;width:100%;padding:7px 9px}
+.sample .n{font-weight:600}
+.sample .m{font-size:12px;color:var(--muted)}
+.sample.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.chip{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:99px;border:1px solid var(--line);background:var(--soft);margin:2px 3px 2px 0;white-space:nowrap}
+.chip.bad{color:var(--bad);border-color:currentColor;background:transparent}
+.chip.warn{color:var(--warn);border-color:currentColor;background:transparent}
+.chip.ok{color:var(--ok);border-color:currentColor;background:transparent}
+.kv{display:grid;grid-template-columns:110px 1fr;gap:3px 8px;font-size:13px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0}
+.loop{font-size:13px;padding:6px 8px;border-left:3px solid var(--accent);background:var(--soft);border-radius:4px;margin:4px 0}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+#chat{flex:1;min-height:260px;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:4px}
+.msg{max-width:88%;padding:8px 11px;border-radius:12px;white-space:pre-wrap;word-wrap:break-word}
+.msg.bot{background:var(--bot);align-self:flex-start;border-bottom-left-radius:3px}
+.msg.user{background:var(--user);align-self:flex-end;border-bottom-right-radius:3px}
+.msg .who{font-size:11px;color:var(--muted);margin-bottom:2px}
+.sys{align-self:center;font-size:12px;color:var(--muted);text-align:center;max-width:95%}
+.sys.bad{color:var(--bad);font-weight:600}
+.quick{display:flex;flex-wrap:wrap;gap:5px}
+.quick button{font-size:12px;padding:3px 8px}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px}
+.compare > div{background:var(--soft);border-radius:8px;padding:8px}
+.compare b{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:4px}
+.tabs{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.badge{display:inline-block;min-width:18px;padding:0 5px;border-radius:99px;background:var(--bad);color:#fff;font-size:11px;text-align:center;margin-left:4px}
+#doc{overflow:auto;flex:1}
+.md h1{font-size:17px;margin:4px 0 6px}
+.md h2{font-size:14px;margin:14px 0 4px;color:var(--accent)}
+.md ul{margin:2px 0;padding-left:18px}
+.md li{margin:2px 0}
+.md p{margin:4px 0}
+pre{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:10px;overflow:auto;font:12px/1.5 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-word;margin:0}
+.diff .add{color:var(--ok)}
+.diff .del{color:var(--bad)}
+table.fm{width:100%;border-collapse:collapse;font-size:12.5px}
+table.fm td{border-top:1px solid var(--line);padding:4px 6px;vertical-align:top}
+table.fm td:first-child{color:var(--muted);white-space:nowrap;width:120px}
+table.fm code{font:12px ui-monospace,Consolas,monospace;word-break:break-word}
+.dec{font-size:13px;padding:5px 0;border-top:1px solid var(--line)}
+.dec b{font-family:ui-monospace,Consolas,monospace;font-size:12px}
+.toast{position:fixed;right:16px;bottom:16px;background:var(--ink);color:var(--bg);padding:8px 12px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:.95}
+.lat{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ok)}
+#voiceRow label{display:flex;align-items:center;gap:5px;flex:0 0 auto;font-size:13px;white-space:nowrap}
+#voiceRow input{width:auto}
+#mic{flex:0 0 auto;min-width:150px;font-weight:600}
+#mic.rec{background:var(--bad);border-color:var(--bad);color:#fff}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>VANI Context Console</h1>
+    <div class="sub">Pick a user → talk to VANI → watch the context file update</div>
+  </div>
+  <div class="sp"></div>
+  <div class="sub">Clock <b id="clock">–</b></div>
+  <button id="reset" title="Clear all test sessions and events">Reset test data</button>
+</header>
+
+<main>
+  <!-- LEFT: user + context summary + live events -->
+  <section class="col">
+    <div class="card">
+      <h2>User</h2>
+      <div class="row" style="margin-bottom:8px">
+        <select id="role" style="flex:0 0 90px"><option value="seller">Seller</option><option value="buyer">Buyer</option></select>
+        <input id="glid" placeholder="GLID e.g. 93557756">
+        <button id="load" class="primary">Load</button>
+      </div>
+      <div class="samples" id="samples"><span class="muted small">Loading samples…</span></div>
+    </div>
+
+    <div class="card" id="summary"><h2>Context at a glance</h2><span class="muted small">Load a user.</span></div>
+
+    <div class="card">
+      <h2>Send a live event</h2>
+      <div class="small muted" style="margin-bottom:6px">Simulates new activity arriving from another system. The file updates immediately.</div>
+      <select id="evType" style="margin-bottom:6px">
+        <option value="enquiry">New buyer enquiry</option>
+        <option value="whatsapp">Seller writes on WhatsApp</option>
+        <option value="botcall">VANI call summary</option>
+      </select>
+      <div id="evEnq" class="row" style="margin-bottom:6px">
+        <input id="evProduct" placeholder="Product" value="Fancy Laces">
+        <input id="evCity" placeholder="Buyer city" value="Pune">
+      </div>
+      <textarea id="evText" rows="2" placeholder="Message / summary text"></textarea>
+      <div class="row" style="margin-top:6px">
+        <span id="evResult" class="small muted"></span>
+        <button id="evSend">Send event</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MIDDLE: conversation -->
+  <section class="col">
+    <div class="card" style="display:flex;flex-direction:column;flex:1;min-height:520px">
+      <h2>Conversation with VANI</h2>
+      <div class="row" style="margin-bottom:8px">
+        <select id="channel"><option value="voice">Voice call</option><option value="whatsapp">WhatsApp</option></select>
+        <select id="direction"><option value="outbound">VANI starts (outbound)</option><option value="inbound">User starts (inbound)</option></select>
+      </div>
+      <div class="row" id="firstRow" style="margin-bottom:8px;display:none">
+        <input id="firstMsg" placeholder="User's first message, e.g. Hi" value="Hi">
+      </div>
+      <div class="row" style="margin-bottom:8px">
+        <button id="start" class="primary" disabled>Start conversation</button>
+        <button id="end" disabled>End &amp; write back</button>
+      </div>
+      <div class="row" id="voiceRow" style="margin-bottom:8px">
+        <button id="mic" disabled title="Tap, speak, tap again to send">🎙 Tap to talk</button>
+        <label><input type="checkbox" id="speakOn" checked> Speak replies</label>
+        <span id="voiceMode" class="small muted" style="text-align:right"></span>
+      </div>
+      <div id="compare"></div>
+      <div id="chat"><div class="sys">Load a user, choose a channel, then start.</div></div>
+      <div class="quick" id="quick" style="margin:8px 0"></div>
+      <div class="row">
+        <input id="say" placeholder="Type as the user (Hinglish works)…" disabled>
+        <button id="send" class="primary" disabled>Send</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT: the file -->
+  <section class="col">
+    <div class="card" style="display:flex;flex-direction:column;flex:1;min-height:520px">
+      <div class="row" style="margin-bottom:6px">
+        <h2 style="margin:0" id="fileTitle">Context file</h2>
+        <span class="small muted" id="fileMeta" style="text-align:right"></span>
+      </div>
+      <div class="tabs">
+        <button data-tab="doc" class="on">File</button>
+        <button data-tab="fm">Front matter</button>
+        <button data-tab="raw">Raw</button>
+        <button data-tab="diff">What changed<span id="diffBadge"></span></button>
+        <button data-tab="trace">Decision trace<span id="traceBadge"></span></button>
+      </div>
+      <div id="doc"><span class="muted small">No file loaded.</span></div>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const api = async (method, path, body) => {
+  const r = await fetch(path, { method, headers: { "content-type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+};
+const toast = (t) => { const el = $("toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 2600); };
+
+const S = { role: "seller", glid: null, ctx: null, prevMd: null, diff: [], session: null, decisions: [], tab: "doc" };
+const VOLATILE = /^(generated_at|tokens|as_of|watermark): /;
+
+const QUICK = {
+  seller: ["Haan ji", "Kaunsi enquiry?", "Meeting ho gayi thi, executive aaye the", "Paid plan nahi lena", "Abhi gaadi chala raha hoon, WhatsApp pe bhej do", "45 rupees per piece, MOQ 100", "Baar baar call mat karo", "Kya aap bot ho?", "Thank you"],
+  buyer: ["Haan ji", "Quantity 200 piece chahiye, delivery Kanpur", "Suppliers ki list WhatsApp pe bhej do", "Nahi", "Thank you"],
+};
+
+// ---------- tiny markdown renderer (headings, bullets, bold) ----------
+function mdToHtml(body) {
+  const out = []; let inList = false;
+  for (const raw of body.split("\n")) {
+    const line = esc(raw).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+    if (/^- /.test(raw)) { if (!inList) { out.push("<ul>"); inList = true; } out.push(`<li>${line.slice(2)}</li>`); continue; }
+    if (inList) { out.push("</ul>"); inList = false; }
+    if (/^# /.test(raw)) out.push(`<h1>${line.slice(2)}</h1>`);
+    else if (/^## /.test(raw)) out.push(`<h2>${line.slice(3)}</h2>`);
+    else if (raw.trim()) out.push(`<p>${line}</p>`);
+  }
+  if (inList) out.push("</ul>");
+  return out.join("");
+}
+const policyChip = (p) => `<span class="chip ${p === "do_not_call" ? "bad" : p === "ok" ? "ok" : "warn"}">${esc(p || "–")}</span>`;
+
+// ---------- samples ----------
+async function loadSamples() {
+  const { samples, clock } = await api("GET", "/api/samples");
+  $("clock").textContent = clock;
+  const label = { demo: "Demo user", do_not_call: "Asked to stop calls", buyer_waiting: "Buyer waiting", meeting_fixed: "Meeting fixed", whatsapp_unfinished: "Unfinished WhatsApp", cold_start: "Cold start" };
+  $("samples").innerHTML = samples.map((s) => `
+    <button class="sample" data-role="${s.role}" data-glid="${esc(s.glid)}">
+      <div class="n">${esc(s.name)} <span class="muted small">· ${s.role} ${esc(s.glid)}</span></div>
+      <div class="m">${esc(label[s.tag] || s.tag)} · ${esc(s.city || "")} · ${policyChip(s.contact_policy)} ${s.loops ? `${s.loops} open loop${s.loops > 1 ? "s" : ""}` : ""}</div>
+    </button>`).join("");
+  for (const b of document.querySelectorAll(".sample")) b.onclick = () => { $("role").value = b.dataset.role; $("glid").value = b.dataset.glid; loadUser(); };
+}
+
+// ---------- context ----------
+async function loadUser(keepPrev = false) {
+  const role = $("role").value, glid = $("glid").value.trim();
+  if (!glid) return;
+  if (!keepPrev || S.glid !== glid || S.role !== role) { S.prevMd = null; S.diff = []; S.decisions = []; }
+  else S.prevMd = S.ctx?.md || null;
+  S.role = role; S.glid = glid;
+  S.ctx = await api("GET", `/context/${role}/${encodeURIComponent(glid)}?format=json`);
+  $("clock").textContent = S.ctx.clock;
+  if (S.prevMd) {
+    const A = new Set(S.prevMd.split("\n").filter((l) => !VOLATILE.test(l)));
+    const B = new Set(S.ctx.md.split("\n").filter((l) => !VOLATILE.test(l)));
+    S.diff = [...[...A].filter((l) => !B.has(l)).map((l) => ["del", l]), ...[...B].filter((l) => !A.has(l)).map((l) => ["add", l])];
+  }
+  for (const b of document.querySelectorAll(".sample")) b.classList.toggle("active", b.dataset.glid === glid && b.dataset.role === role);
+  renderSummary(); renderDoc(); renderQuick();
+  $("start").disabled = !!S.session;
+  $("evSend").disabled = role !== "seller";
+}
+
+function renderSummary() {
+  const fm = S.ctx.fm;
+  const loops = (fm.loops || []).map((l) => `<div class="loop"><b>${esc(l.type.replace(/_/g, " "))}</b> · ${esc(l.on || "")}<br>${esc([l.product, l.city || l.seller, l.ask && `"${l.ask}"`].filter(Boolean).join(" · "))}</div>`).join("") || `<span class="muted small">No open loops.</span>`;
+  const resume = fm.resume ? `<div class="loop" style="border-color:var(--ok)"><b>resume on ${esc(fm.resume.target)}</b> · promised on ${esc(fm.resume.from)} ${esc(fm.resume.on)}<br>"${esc(fm.resume.said)}" → ${esc(fm.resume.promise)}</div>` : "";
+  $("summary").innerHTML = `<h2>Context at a glance</h2>
+    <div style="font-weight:600;font-size:15px">${esc(fm.name || fm.name_hint || fm.glid)}</div>
+    <div class="muted small" style="margin-bottom:8px">${esc(fm.role)} ${esc(fm.glid)} · ${esc(fm.city || "")}${fm.cold_start ? " · <b>cold start</b>" : ""}</div>
+    <dl class="kv">
+      <dt>Contact policy</dt><dd>${policyChip(fm.contact_policy)}</dd>
+      <dt>Flags</dt><dd>${(fm.flags || []).map((f) => `<span class="chip">${esc(f)}</span>`).join("") || '<span class="muted">none</span>'}</dd>
+      ${fm.role === "seller" ? `<dt>Prefers</dt><dd>${esc(fm.channel_pref)} · ${esc((fm.lang || []).join(", ") || "–")} · ${esc(fm.best_time || "time unknown")}</dd>` : `<dt>KYC</dt><dd>${esc(fm.kyc)}</dd><dt>Looking for</dt><dd>${esc((fm.looking_for || []).join(", ") || "–")}</dd>`}
+    </dl>
+    <div style="margin-top:8px">${resume}${loops}</div>`;
+}
+
+function renderDoc() {
+  if (!S.ctx) return;
+  const fm = S.ctx.fm;
+  $("fileTitle").textContent = S.ctx.file.replace(/\\/g, "/");
+  $("fileMeta").innerHTML = `${fm.tokens} tokens · rendered in <span class="lat">${S.ctx.render_ms} ms</span>`;
+  $("diffBadge").innerHTML = S.diff.length ? `<span class="badge">${S.diff.length}</span>` : "";
+  $("traceBadge").innerHTML = S.decisions.length ? `<span class="badge" style="background:var(--accent)">${S.decisions.length}</span>` : "";
+  for (const b of document.querySelectorAll(".tabs button")) b.classList.toggle("on", b.dataset.tab === S.tab);
+  const el = $("doc");
+  if (S.tab === "doc") el.innerHTML = `<div class="md">${mdToHtml(S.ctx.body)}</div>`;
+  else if (S.tab === "fm") el.innerHTML = `<table class="fm">${Object.entries(fm).map(([k, v]) => `<tr><td>${esc(k)}</td><td><code>${esc(JSON.stringify(v))}</code></td></tr>`).join("")}</table>`;
+  else if (S.tab === "raw") el.innerHTML = `<pre>${esc(S.ctx.md)}</pre>`;
+  else if (S.tab === "diff") el.innerHTML = S.diff.length
+    ? `<pre class="diff">${S.diff.map(([t, l]) => `<span class="${t}">${t === "add" ? "+ " : "- "}${esc(l)}</span>`).join("\n")}</pre>`
+    : `<span class="muted small">No changes yet. End a conversation or send a live event, and the lines that changed in the file appear here.</span>`;
+  else if (S.tab === "trace") el.innerHTML = S.decisions.length
+    ? S.decisions.map((d) => `<div class="dec"><b>${esc(d.action)}</b>${d.question ? ` <code>${esc(d.question)}</code>` : ""} <span class="muted small">${esc((d.ts || "").slice(11, 16))}</span><br>${esc(d.reason || "")}${d.text ? ` → ${esc(d.text)}` : ""}${d.facts?.length ? `<br><span class="small muted">facts: ${esc(d.facts.join(", "))}</span>` : ""}</div>`).join("")
+    : `<span class="muted small">Start a conversation to see why VANI says what it says: skipped questions, policy checks, promises, actions.</span>`;
+}
+for (const b of document.querySelectorAll(".tabs button")) b.onclick = () => { S.tab = b.dataset.tab; renderDoc(); };
+
+// ---------- conversation ----------
+function renderQuick() {
+  $("quick").innerHTML = (QUICK[S.role] || []).map((q) => `<button>${esc(q)}</button>`).join("");
+  for (const b of $("quick").querySelectorAll("button")) b.onclick = () => { if (!$("say").disabled) { $("say").value = b.textContent; sendTurn(); } };
+}
+function addMsg(kind, text, who) {
+  const d = document.createElement("div");
+  if (kind === "sys" || kind === "sysbad") { d.className = `sys${kind === "sysbad" ? " bad" : ""}`; d.textContent = text; }
+  else { d.className = `msg ${kind}`; d.innerHTML = `<div class="who">${esc(who)}</div>${esc(text)}`; }
+  $("chat").appendChild(d);
+  $("chat").scrollTop = $("chat").scrollHeight;
+}
+const userLabel = () => (S.role === "buyer" ? "Buyer" : "Seller");
+function setLive(on) {
+  $("say").disabled = !on; $("send").disabled = !on; $("end").disabled = !S.session;
+  $("start").disabled = !!S.session || !S.ctx;
+  $("channel").disabled = $("direction").disabled = !!S.session;
+  micState(V.rec ? "rec" : "idle");
+}
+
+$("channel").onchange = () => { $("voiceRow").style.display = voiceOn() ? "" : "none"; };
+
+$("direction").onchange = () => { $("firstRow").style.display = $("direction").value === "inbound" ? "" : "none"; };
+
+$("start").onclick = async () => {
+  if (!S.ctx) return;
+  const channel = $("channel").value, direction = $("direction").value;
+  $("chat").innerHTML = "";
+  addMsg("sys", `${channel === "voice" ? "📞 Voice call" : "💬 WhatsApp"} · ${direction} · VANI read ${S.ctx.file.replace(/\\/g, "/")} (${S.ctx.fm.tokens} tokens)`);
+  const first = direction === "inbound" ? $("firstMsg").value.trim() || "Hi" : null;
+  if (first) addMsg("user", first, userLabel());
+  const r = await api("POST", "/bot/start", { glid: S.glid, role: S.role, channel, direction, text: first });
+  S.session = r.session_id; S.decisions = r.decisions;
+  $("compare").innerHTML = `<div class="compare" style="margin-bottom:8px">
+      <div><b>Cold start (no file)</b>${esc(r.cold.text)}<div class="small muted" style="margin-top:4px">Would ask ${r.cold.questions.length} standard questions</div></div>
+      <div><b>With the context file</b>${r.suppressed ? "<span style='color:var(--bad)'>Call not placed</span>" : esc(r.reply)}<div class="small muted" style="margin-top:4px">Skipped ${r.skipped.length}: ${esc(r.skipped.map((s) => s.id).join(", ") || "none")}</div></div>
+    </div>`;
+  if (r.suppressed) {
+    addMsg("sysbad", "⛔ Outbound call blocked: this user asked IndiaMART to stop calling (contact_policy = do_not_call). Try WhatsApp, inbound.");
+  } else {
+    addMsg("bot", r.reply, "VANI");
+    speak(r.reply);
+    for (const s of r.skipped) addMsg("sys", `skipped "${s.ask}" — ${s.reason}`);
+  }
+  S.tab = "trace"; renderDoc();
+  setLive(!r.ended);
+  if (r.ended) $("end").disabled = false;
+};
+
+async function sendTurn(spoken) {
+  const text = (typeof spoken === "string" ? spoken : $("say").value).trim();
+  if (!text || !S.session) return;
+  if (typeof spoken !== "string") $("say").value = "";
+  addMsg("user", text, userLabel());
+  const r = await api("POST", `/bot/${encodeURIComponent(S.session)}/turn`, { text });
+  if (r.reply) { addMsg("bot", r.reply, "VANI"); speak(r.reply); }
+  S.decisions = r.decisions; renderDoc();
+  if (r.ended) { addMsg("sys", "VANI closed the conversation. Click “End & write back” to save it to memory."); setLive(false); $("end").disabled = false; }
+}
+$("send").onclick = sendTurn;
+$("say").onkeydown = (e) => { if (e.key === "Enter") sendTurn(); };
+
+$("end").onclick = async () => {
+  if (!S.session) return;
+  const r = await api("POST", `/bot/${encodeURIComponent(S.session)}/end`);
+  S.session = null;
+  addMsg("sys", `✅ Written back · ${r.summary} · file refreshed in ${r.latency_ms} ms`);
+  await loadUser(true);
+  S.tab = "diff"; renderDoc(); setLive(false);
+  toast(`Memory updated in ${r.latency_ms} ms — see “What changed”`);
+};
+
+// ---------- local voice call: mic -> speech-to-text -> VANI -> text-to-speech ----------
+// With SARVAM_API_KEY on the server: Sarvam STT/TTS via /voice/*. Without it: the browser's own speech.
+const V = { sarvam: false, rec: null, audio: null, timer: null };
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const voiceOn = () => $("channel").value === "voice";
+api("GET", "/voice/status").then((s) => {
+  V.sarvam = s.sarvam;
+  $("voiceMode").textContent = s.sarvam ? `Sarvam ${s.stt_model} → VANI → ${s.tts_model} · ${s.speaker}` : "Browser speech · set SARVAM_API_KEY for Sarvam voice";
+}).catch(() => {});
+
+function micState(state) {
+  const b = $("mic");
+  b.classList.toggle("rec", state === "rec");
+  b.textContent = state === "rec" ? "⏹ Tap to send" : state === "busy" ? "… Listening back" : "🎙 Tap to talk";
+  b.disabled = state === "busy" || (state !== "rec" && ($("say").disabled || !voiceOn()));
+}
+function stopSpeaking() {
+  if (V.audio) { V.audio.pause(); V.audio = null; }
+  if (window.speechSynthesis) speechSynthesis.cancel();
+}
+async function speak(text) {
+  if (!voiceOn() || !$("speakOn").checked || !text) return;
+  stopSpeaking();
+  if (V.sarvam) {
+    try {
+      const r = await api("POST", "/voice/tts", { text });
+      if (r.audio) { V.audio = new Audio(`data:audio/wav;base64,${r.audio}`); await V.audio.play(); return; }
+    } catch (e) { toast(`Sarvam voice failed, using browser voice: ${e.message}`); }
+  }
+  if (!window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-IN";
+  const v = speechSynthesis.getVoices().find((x) => x.lang === "en-IN") || speechSynthesis.getVoices().find((x) => x.lang === "hi-IN");
+  if (v) u.voice = v;
+  speechSynthesis.speak(u);
+}
+
+// MediaRecorder gives webm/ogg; Sarvam gets 16 kHz mono 16-bit WAV.
+async function toWav16k(blob) {
+  const ac = new AudioContext();
+  const decoded = await ac.decodeAudioData(await blob.arrayBuffer());
+  ac.close();
+  const off = new OfflineAudioContext(1, Math.max(1, Math.ceil(decoded.duration * 16000)), 16000);
+  const src = off.createBufferSource(); src.buffer = decoded; src.connect(off.destination); src.start();
+  const pcm = (await off.startRendering()).getChannelData(0);
+  const dv = new DataView(new ArrayBuffer(44 + pcm.length * 2));
+  const str = (o, s) => { for (let i = 0; i < s.length; i++) dv.setUint8(o + i, s.charCodeAt(i)); };
+  str(0, "RIFF"); dv.setUint32(4, 36 + pcm.length * 2, true); str(8, "WAVE"); str(12, "fmt ");
+  dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true); dv.setUint32(24, 16000, true);
+  dv.setUint32(28, 32000, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true); str(36, "data"); dv.setUint32(40, pcm.length * 2, true);
+  for (let i = 0; i < pcm.length; i++) dv.setInt16(44 + i * 2, Math.max(-1, Math.min(1, pcm[i])) * 0x7fff, true);
+  return new Blob([dv], { type: "audio/wav" });
+}
+
+$("mic").onclick = async () => {
+  stopSpeaking();
+  if (V.rec) return V.rec.stop();
+  if (V.sarvam) {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true }).catch((e) => { toast(`Microphone: ${e.message}`); return null; });
+    if (!stream) return;
+    const rec = new MediaRecorder(stream), chunks = [];
+    rec.ondataavailable = (e) => chunks.push(e.data);
+    rec.onstop = async () => {
+      stream.getTracks().forEach((t) => t.stop()); clearTimeout(V.timer); V.rec = null; micState("busy");
+      try {
+        const wav = await toWav16k(new Blob(chunks, { type: rec.mimeType }));
+        const r = await fetch("/voice/stt", { method: "POST", headers: { "content-type": "audio/wav" }, body: wav });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || r.statusText);
+        if (!d.text) toast("Didn't catch that. Tap and speak again.");
+        else {
+          if (d.heard && d.heard !== d.text) addMsg("sys", `🎙 heard “${d.heard}” · ${d.ms} ms`);
+          await sendTurn(d.text);
+        }
+      } catch (e) { toast(e.message); }
+      micState("idle");
+    };
+    rec.start(); V.rec = rec; micState("rec");
+    V.timer = setTimeout(() => rec.state === "recording" && rec.stop(), 25000); // Sarvam's REST limit is 30 s
+  } else {
+    if (!SR) return toast("No speech recognition in this browser. Use Chrome or Edge, or set SARVAM_API_KEY.");
+    const r = new SR();
+    r.lang = "en-IN"; r.interimResults = false;
+    r.onresult = (e) => sendTurn(e.results[0][0].transcript);
+    r.onerror = (e) => toast(`Speech: ${e.error}`);
+    r.onend = () => { V.rec = null; micState("idle"); };
+    V.rec = r; r.start(); micState("rec");
+  }
+};
+
+// ---------- live events ----------
+$("evType").onchange = () => {
+  const t = $("evType").value;
+  $("evEnq").style.display = t === "enquiry" ? "" : "none";
+  $("evText").placeholder = t === "enquiry" ? "Buyer's message (optional)" : t === "whatsapp" ? "What the seller types, e.g. Baar baar call mat karo, WhatsApp pe bhejo" : "VANI call summary, e.g. The lead said an executive already visited…";
+};
+$("evSend").onclick = async () => {
+  if (!S.glid || S.role !== "seller") return toast("Load a seller first");
+  const r = await api("POST", "/api/emit", { glid: S.glid, type: $("evType").value, product: $("evProduct").value, city: $("evCity").value, text: $("evText").value.trim() || null });
+  $("evResult").innerHTML = `Event → file in <span class="lat">${r.latency_ms} ms</span>`;
+  await loadUser(true);
+  S.tab = "diff"; renderDoc();
+  toast(`File updated ${r.latency_ms} ms after the event`);
+};
+
+$("load").onclick = () => loadUser();
+$("glid").onkeydown = (e) => { if (e.key === "Enter") loadUser(); };
+$("reset").onclick = async () => {
+  if (S.session) S.session = null;
+  $("reset").disabled = true; $("reset").textContent = "Resetting…";
+  await api("POST", "/api/reset");
+  $("reset").disabled = false; $("reset").textContent = "Reset test data";
+  $("chat").innerHTML = '<div class="sys">Test data cleared. Back to the original dataset.</div>'; $("compare").innerHTML = "";
+  await loadSamples(); if (S.glid) await loadUser(); setLive(false);
+  toast("Reset to the original dataset");
+};
+
+loadSamples().then(() => { $("role").value = "seller"; $("glid").value = "245234426"; loadUser(); setLive(false); }).catch((e) => toast(e.message));
+</script>
+</body>
+</html>
