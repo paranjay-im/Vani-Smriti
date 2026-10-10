@@ -1,0 +1,75 @@
+{
+  "agent_id": "VANI-Seller-6921b562-b28e",
+  "version": 7,
+  "auth": "every tool sends header X-GC-Token from a Sarvam workspace secret",
+  "tools": [
+    {
+      "name": "load_seller_context",
+      "lifecycle": "on_start",
+      "method": "GET",
+      "url": "{tunnel}/sarvam/context?glid={{glid}}",
+      "saves": "glid, seller_context, call_restrictions, call_reason, seller_company_name, initial_message, seller_city/locality/state, lead_bucket, pitch_hook, category_name, inquiry_city, enquiry_count_30d, products_total, already_in_touch_with_executive, last_meeting_date, do_not_call_requested, past_objections, bot_name, meeting slot settings, call_datetime"
+    },
+    {
+      "name": "log_seller_request",
+      "lifecycle": "run",
+      "method": "POST",
+      "url": "{tunnel}/sarvam/request",
+      "body": {
+        "glid": "agent variable",
+        "request_type": "enquiry_reply | catalog_update | photo_help | account_update | buylead_issue | payment_query | complaint | buying_requirement | other",
+        "details": "LLM: one or two English sentences"
+      },
+      "spoken": "{{ message }}"
+    },
+    {
+      "name": "schedule_meeting_tool",
+      "lifecycle": "run",
+      "method": "POST",
+      "url": "{tunnel}/sarvam/meeting",
+      "body": {
+        "glid": "agent variable",
+        "meeting_date": "YYYY-MM-DD",
+        "meeting_time": "HH:MM",
+        "locality": "text",
+        "city": "text"
+      },
+      "spoken": "{{ message }}"
+    },
+    {
+      "name": "schedule_callback_tool",
+      "lifecycle": "run",
+      "method": "POST",
+      "url": "{tunnel}/sarvam/callback",
+      "body": {
+        "glid": "agent variable",
+        "callback_date": "YYYY-MM-DD",
+        "callback_time": "HH:MM"
+      },
+      "spoken": "{{ message }}"
+    },
+    {
+      "name": "mark_do_not_call_tool",
+      "lifecycle": "run",
+      "method": "POST",
+      "url": "{tunnel}/sarvam/dnc",
+      "body": {
+        "glid": "agent variable",
+        "reason": "text"
+      },
+      "spoken": "{{ message }}"
+    },
+    {
+      "name": "save_call_outcome",
+      "lifecycle": "on_end",
+      "method": "POST",
+      "url": "{tunnel}/sarvam/end",
+      "body": "glid, interaction_id, interaction_transcript, duration, start_datetime, user_identifier + output variables (disposition_label, issues_raised, help_given, seller_sentiment, meeting_*, callback_datetime, objection_type, do_not_call_requested, ...)"
+    },
+    {
+      "name": "end_interaction / handle_voicemail / change_output_language",
+      "lifecycle": "core",
+      "note": "Sarvam built-ins"
+    }
+  ]
+}

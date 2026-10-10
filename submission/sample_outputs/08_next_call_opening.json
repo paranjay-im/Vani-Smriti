@@ -1,0 +1,25 @@
+{
+  "before": "the executive visit fixed for 2026-10-11 17:00: confirm it still suits the seller if it is upcoming, or ask whether it happened and helped",
+  "after": "following up on the seller's earlier request: Catalogue or product update: Add product Rotary Drilling Rig, price on request, depth 300 ft",
+  "loops_after": [
+    {
+      "type": "seller_request",
+      "on": "10 Oct",
+      "text": "Catalogue or product update: Add product Rotary Drilling Rig, price on request, depth 300 ft",
+      "ref": "F:245234426:seller_request:VS:sarvam-t1791622914809-request"
+    },
+    {
+      "type": "meeting_check",
+      "on": "10 Oct",
+      "due": "2026-10-11 17:00:00",
+      "ref": "F:245234426:meeting_fixed:VS:sarvam-t1791574966058-meeting"
+    },
+    {
+      "type": "unanswered_enquiry",
+      "on": "1 Oct",
+      "product": "Silicone Half Heel Protector",
+      "city": "Bhopal",
+      "ref": "ENQ:3185539669"
+    }
+  ]
+}

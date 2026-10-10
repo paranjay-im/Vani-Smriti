@@ -134,3 +134,21 @@ test("a logged request becomes an open loop in the seller's file (real data)", a
   const v = sellerVars(store.graph, glid, { fm, md, asOf: "2026-10-03 10:05:00" });
   assert.match(v.call_reason, /^following up on the seller's earlier request: Product photos/);
 });
+
+test("meetings and callbacks must be in the future; same-day visits are refused; istNow is IST", async () => {
+  const at = "2026-10-10 11:00:00";
+  const b = { glid: "245234426", locality: "Vijay Nagar", city: "Indore" };
+  assert.match(toolCall("meeting", { ...b, meeting_date: "2026-10-09", meeting_time: "16:00" }, { ts: at }).message, /already passed/);
+  assert.match(toolCall("meeting", { ...b, meeting_date: "2026-10-10", meeting_time: "17:00" }, { ts: at }).message, /Same-day/);
+  assert.equal(toolCall("meeting", { ...b, meeting_date: "2026-10-11", meeting_time: "17:00" }, { ts: at }).ok, true);
+  assert.match(toolCall("callback", { glid: "1", callback_date: "2026-10-10", callback_time: "09:00" }, { ts: at }).message, /already passed/);
+  assert.equal(toolCall("callback", { glid: "1", callback_date: "2026-10-10", callback_time: "18:00" }, { ts: at }).ok, true);
+  const { istNow } = await import("../src/time.js");
+  assert.equal(istNow(Date.parse("2026-10-10T05:30:00Z")), "2026-10-10 11:00:00");
+});
+
+test("an objection label on a call that ended well adds no fact", () => {
+  assert.deepEqual(outcomeFacts({ disposition_label: "Meeting Fixed", meeting_fixed: "1", objection_type: "Existing Engagement / Past Experience" }).map((f) => f.type), ["meeting_fixed"]);
+  assert.deepEqual(outcomeFacts({ disposition_label: "Request Logged", objection_type: "Existing Engagement / Past Experience" }), []);
+  assert.deepEqual(outcomeFacts({ disposition_label: "Not Interested", objection_type: "Wrong Contact / Business Not Applicable" }).map((f) => f.type), ["wrong_contact"]);
+});

@@ -1,0 +1,25 @@
+{
+  "source": "vani_session",
+  "row": {
+    "session_id": "sarvam-t1791622914809-request",
+    "glid": "245234426",
+    "role": "seller",
+    "channel": "voice",
+    "direction": "outbound",
+    "ts": "2026-10-10 14:31:55",
+    "end_ts": "2026-10-10 14:32:55",
+    "summary": "Seller request noted (Catalogue or product update)",
+    "outcome": "Seller request noted (Catalogue or product update)",
+    "turns": [],
+    "decisions": [],
+    "facts": [
+      {
+        "type": "seller_request",
+        "evidence": "Catalogue or product update: Add product Rotary Drilling Rig, price on request, depth 300 ft",
+        "due": null
+      }
+    ],
+    "llm": "sarvam",
+    "interaction_id": "t1791622914809"
+  }
+}

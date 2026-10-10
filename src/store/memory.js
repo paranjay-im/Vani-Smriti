@@ -2,6 +2,7 @@
 // Same interface as NeoStore, so it is the fallback (GC_STORE=memory) and the oracle the Neo4j store is tested against.
 import { loadGraph } from "../load.js";
 import { writeContext } from "../render.js";
+import { graphDiff, snapOwned } from "../graphdiff.js";
 
 export class MemoryStore {
   kind = "memory";
@@ -21,10 +22,14 @@ export class MemoryStore {
   async close() {}
 
   // Apply one event or a list. Returns the owners to re-render and the graph to render them from.
-  async apply(events, { persist = false } = {}) {
-    const out = { sellers: new Set(), buyers: new Set(), view: this.graph };
+  // diff: also return, per event, what changed in the graph around the event's seller (for the live dashboard).
+  async apply(events, { persist = false, diff = false } = {}) {
+    const out = { sellers: new Set(), buyers: new Set(), view: this.graph, changes: [] };
     for (const ev of [].concat(events)) {
+      const glids = ev.row?.glid ? [String(ev.row.glid)] : [];
+      const before = diff && glids.length ? snapOwned(this.graph, glids) : null;
       const a = this.pipe.apply(ev, { persist });
+      if (before) out.changes.push({ glid: glids[0], ...graphDiff(before, snapOwned(this.graph, glids), { store: this.kind }) });
       a.sellers.forEach((x) => out.sellers.add(x));
       a.buyers.forEach((x) => out.buyers.add(x));
     }

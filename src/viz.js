@@ -8,9 +8,30 @@ import { cmpTs, dmy } from "./time.js";
 const SHOW = ["Enquiry", "EnquiryMessage", "BuyerCall", "BuyLead", "ChatSession", "PNSCall", "BotCall", "ExecCall", "VaniSession"];
 const COLOR = { long_term: "#2f6db5", short_term: "#1f8a5c", reasoning: "#b5462f" };
 
-export function graphHtml(g, glid, { limit = 45 } = {}) {
+export const nodeLabel = (n) => {
+  switch (n.label) {
+    case "Seller": return n.props.company;
+    case "Buyer": return `Buyer ${handle(n.buyer)}`;
+    case "Category": case "Product": return n.props.name;
+    case "Employee": return `Exec ${n.props.employee_id}`;
+    case "Fact": return `Fact: ${n.props.type}
+${dmy(n.ts)}`;
+    case "Decision": return `Decision: ${n.props.action}${n.props.question ? ` (${n.props.question})` : ""}`;
+    case "BotCall": return `VANI call
+${dmy(n.ts)} · ${n.props.disposition}`;
+    default: return `${n.label}
+${dmy(n.ts)}`;
+  }
+};
+export const visNode = (n) => ({
+  id: n.id, label: nodeLabel(n), group: n.label, tier: n.tier, color: COLOR[n.tier], shape: n.label === "Seller" ? "star" : n.tier === "reasoning" ? "diamond" : n.tier === "long_term" ? "dot" : "box",
+  font: { color: n.tier === "short_term" ? "#ffffff" : undefined, size: 12 }, size: n.label === "Seller" ? 30 : 12,
+});
+
+// The seller, its latest interactions, facts and decisions, and the buyers/categories/products/executives they touch.
+export function egoGraph(g, glid, { limit = 45 } = {}) {
   const root = g.get(`S:${glid}`);
-  if (!root) throw new Error(`No seller ${glid}`);
+  if (!root) throw Object.assign(new Error(`No seller ${glid}`), { status: 404 });
   const picked = new Set([root.id]);
   const inter = SHOW.flatMap((l) => g.owned(glid, l)).filter((n) => n.ts).sort((a, b) => -cmpTs(a, b)).slice(0, limit);
   for (const n of inter) picked.add(n.id);
@@ -21,24 +42,14 @@ export function graphHtml(g, glid, { limit = 45 } = {}) {
       if (n && ["Buyer", "Category", "Product", "Employee"].includes(n.label)) picked.add(x);
     }
   }
-  const label = (n) => {
-    switch (n.label) {
-      case "Seller": return n.props.company;
-      case "Buyer": return `Buyer ${handle(n.buyer)}`;
-      case "Category": case "Product": return n.props.name;
-      case "Employee": return `Exec ${n.props.employee_id}`;
-      case "Fact": return `Fact: ${n.props.type}\n${dmy(n.ts)}`;
-      case "Decision": return `Decision: ${n.props.action}${n.props.question ? ` (${n.props.question})` : ""}`;
-      case "BotCall": return `VANI call\n${dmy(n.ts)} · ${n.props.disposition}`;
-      default: return `${n.label}\n${dmy(n.ts)}`;
-    }
-  };
-  const nodes = [...picked].map((id) => g.get(id)).filter(Boolean).map((n) => ({
-    id: n.id, label: label(n), color: COLOR[n.tier], shape: n.label === "Seller" ? "star" : n.tier === "reasoning" ? "diamond" : n.tier === "long_term" ? "dot" : "box",
-    font: { color: n.tier === "short_term" ? "#ffffff" : undefined, size: 12 }, size: n.label === "Seller" ? 30 : 12,
-  }));
+  const nodes = [...picked].map((id) => g.get(id)).filter(Boolean).map(visNode);
   const edges = [];
-  for (const [src, rel, dst] of g.edges()) if (picked.has(src) && picked.has(dst)) edges.push({ from: src, to: dst, label: rel, arrows: "to", font: { size: 9, align: "middle" } });
+  for (const src of picked) for (const [rel, dsts] of g.out.get(src) || []) for (const dst of dsts) if (picked.has(dst)) edges.push({ from: src, to: dst, label: rel, arrows: "to", font: { size: 9, align: "middle" } });
+  return { root, nodes, edges };
+}
+
+export function graphHtml(g, glid, { limit = 45 } = {}) {
+  const { root, nodes, edges } = egoGraph(g, glid, { limit });
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Context Graph ${glid}</title>
 <script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>

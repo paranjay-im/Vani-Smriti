@@ -1,6 +1,6 @@
 // Context service + test console. Event-driven: POST /events -> ingest -> re-render affected files ->
 // respond with the measured delay. The bot (or any team) reads files with GET /context/:role/:glid.
-// GET / serves the test console (src/ui.html).
+// GET / serves VANI Live (src/live.html), the main page; the developer console (src/ui.html) is at /console.
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
@@ -13,9 +13,13 @@ import { eventTs } from "./sources.js";
 import { buildEvent } from "./synthetic.js";
 import { addMin } from "./time.js";
 import { sarvamRoutes } from "./sarvam.js";
+import { liveHub, lineDiff } from "./live.js";
+import { egoGraph, visNode } from "./viz.js";
 import { AS_OF, EVENT_LOG, OUT_DIR, PORT, ROOT, SAMPLE_BUYERS, SAMPLE_SELLERS, SARVAM } from "./config.js";
 
 const UI = path.join(ROOT, "src", "ui.html");
+const LIVE = path.join(ROOT, "src", "live.html");
+const SDK = path.join(ROOT, "src", "vendor", "sarvam-sdk.js");
 
 // ---- Sarvam speech, for local voice calls from the console ----
 async function sarvam(pathname, init) {
@@ -61,6 +65,7 @@ export async function startServer({ port = PORT, llm = false, log = EVENT_LOG, o
   let store, clock, samples;
   const latencies = [];
   const sessions = new Map();
+  const hub = liveHub(); // live dashboard feed (GET /live/events)
 
   // Open the store (memory: load CSVs + replay this server's event log; neo4j: connect). The clock resumes after the newest logged event.
   async function boot({ reload = false } = {}) {
@@ -122,12 +127,29 @@ export async function startServer({ port = PORT, llm = false, log = EVENT_LOG, o
       const ts = eventTs(ev);
       if (ts && ts > clock) clock = ts;
     }
-    const { sellers, buyers, view, warning } = await store.apply(events, { persist: true });
+    // The live dashboard shows each seller file before and after the event; read the old one before it is overwritten.
+    const before = new Map();
+    for (const ev of events) {
+      const g = ev.row?.glid ? String(ev.row.glid) : null;
+      if (g && !before.has(g)) { try { before.set(g, fs.readFileSync(path.join(outDir, "sellers", `${g}.md`), "utf8")); } catch { before.set(g, ""); } }
+    }
+    const { sellers, buyers, view, warning, changes = [] } = await store.apply(events, { persist: true, diff: true });
     const files = [];
-    for (const g of sellers) if (view ? view.get(`S:${g}`) : await store.hasSeller(g)) files.push(path.relative(outDir, (await store.write("seller", g, { asOf: clock, outDir }, view)).file));
+    const after = new Map();
+    for (const g of sellers) if (view ? view.get(`S:${g}`) : await store.hasSeller(g)) {
+      const w = await store.write("seller", g, { asOf: clock, outDir }, view);
+      after.set(g, w.md);
+      files.push(path.relative(outDir, w.file));
+    }
     for (const b of buyers) files.push(path.relative(outDir, (await store.write("buyer", b, { asOf: clock, outDir }, view)).file));
     const ms = performance.now() - received;
     latencies.push(ms);
+    for (const [g, md] of after) if (before.has(g)) hub.emit("md_diff", { glid: g, diff: lineDiff(before.get(g), md), md, ms: +ms.toFixed(2) });
+    for (const c of changes) {
+      // Readable labels for new nodes, from the graph the event was applied to.
+      for (const n of c.created) { const node = view?.get(n.id); if (node) n.vis = visNode(node); }
+      hub.emit("graph_diff", { ...c, events: events.map((e) => e.source) });
+    }
     return { files, latency_ms: +ms.toFixed(2), ...(warning ? { warning } : {}) };
   };
   const botView = (bot) => ({
@@ -153,7 +175,7 @@ export async function startServer({ port = PORT, llm = false, log = EVENT_LOG, o
     res.end(type === "application/json" ? JSON.stringify(data, null, 2) : data);
   };
 
-  const sarvam = sarvamRoutes({ store: () => store, clock: () => clock, setClock: (t) => { clock = t; }, ingest, outDir, send, body });
+  const sarvam = sarvamRoutes({ store: () => store, clock: () => clock, setClock: (t) => { clock = t; }, ingest, outDir, send, body, hub });
 
   await boot();
 
@@ -164,7 +186,24 @@ export async function startServer({ port = PORT, llm = false, log = EVENT_LOG, o
       const route = `${req.method} ${url.pathname}`;
       if (await sarvam(req, res, url, route)) return; // also blocks everything else for requests from the public tunnel
 
-      if (route === "GET /" || route === "GET /ui") return send(res, 200, fs.readFileSync(UI, "utf8"), "text/html");
+      // VANI Live, the main page: a Sarvam call next to everything it changes. Local only (tunnel guard in sarvam.js).
+      // /live is kept as an alias for old links.
+      if (route === "GET /" || route === "GET /live") return send(res, 200, fs.readFileSync(LIVE, "utf8"), "text/html");
+      if (route === "GET /console" || route === "GET /ui") return send(res, 200, fs.readFileSync(UI, "utf8"), "text/html");
+      if (route === "GET /live/sdk.js") return send(res, 200, fs.readFileSync(SDK, "utf8"), "text/javascript");
+      if (route === "GET /live/events") return hub.stream(req, res);
+      if (route === "POST /live/clear") { hub.clear(); return send(res, 200, { ok: true }); }
+      if (route === "POST /live/mark") { const b = await body(req); hub.emit(String(b.type || "note"), b.data ?? null); return send(res, 200, { ok: true }); }
+      if (route === "GET /live/graph") {
+        const glid = String(url.searchParams.get("glid") || "");
+        if (!/^\d+$/.test(glid)) return send(res, 400, { error: "glid must be digits" });
+        const t0 = performance.now();
+        const g = store.neighbourhood ? await store.neighbourhood(glid) : null;
+        if (!g) return send(res, 404, { error: "no graph in this store mode" });
+        const { nodes, edges } = egoGraph(g, glid, { limit: Number(url.searchParams.get("limit") || 40) });
+        return send(res, 200, { glid, store: store.kind, nodes, edges, ms: +(performance.now() - t0).toFixed(1),
+          neo4j_browser: store.kind === "neo4j" ? `http://localhost:7474/browser/?cmd=edit&arg=${encodeURIComponent(`MATCH (s:Node {id:'S:${glid}'})<-[r]-(n) WHERE n:Fact OR n:Decision OR n:VaniSession RETURN s, r, n ORDER BY n.ts DESC LIMIT 60`)}` : null });
+      }
       if (route === "GET /health") return send(res, 200, { ok: true, clock, ...(await store.counts()), store: store.kind, ...(filesOnly ? { mode: "files-only" } : {}), sessions: sessions.size, llm });
       if (route === "GET /api/samples") return send(res, 200, { clock, samples });
       if (req.method === "GET" && parts[0] === "context" && parts.length === 3) {
@@ -227,11 +266,11 @@ export async function startServer({ port = PORT, llm = false, log = EVENT_LOG, o
         const out = route === "POST /voice/stt" ? await speechToText(await raw(req)) : await textToSpeech((await body(req)).text || "");
         return send(res, 200, { ...out, ms: Math.round(performance.now() - t0) });
       }
-      return send(res, 404, { error: "not found", routes: ["GET /", "GET /health", "GET /api/samples", "GET /context/:role/:glid[?format=json]", "POST /events", "POST /api/emit", "POST /api/reset", "GET /metrics", "POST /bot/start", "POST /bot/:id/turn", "POST /bot/:id/end", "GET /voice/status", "POST /voice/stt", "POST /voice/tts", "GET /sarvam/context?glid=", "POST /sarvam/meeting", "POST /sarvam/callback", "POST /sarvam/dnc", "POST /sarvam/end", "GET /sarvam/runtime/*", "GET /sarvam/config", "GET|POST /sarvam/test-seller"] });
+      return send(res, 404, { error: "not found", routes: ["GET / (VANI Live)", "GET /console", "GET /health", "GET /api/samples", "GET /context/:role/:glid[?format=json]", "POST /events", "POST /api/emit", "POST /api/reset", "GET /metrics", "POST /bot/start", "POST /bot/:id/turn", "POST /bot/:id/end", "GET /voice/status", "POST /voice/stt", "POST /voice/tts", "GET /sarvam/context?glid=", "POST /sarvam/meeting", "POST /sarvam/callback", "POST /sarvam/dnc", "POST /sarvam/end", "GET /sarvam/runtime/*", "GET /sarvam/config", "GET|POST /sarvam/test-seller"] });
     } catch (e) {
       return send(res, e.status || 500, { error: e.message });
     }
   });
-  server.listen(port, () => process.stderr.write(`  context service on http://localhost:${port}  (clock ${clock}${llm ? ", LLM phrasing on" : ""})\n`));
+  server.listen(port, () => process.stderr.write(`  context service on http://localhost:${port}  (clock ${clock}${llm ? ", LLM phrasing on" : ""})\n  VANI Live: http://localhost:${port}/   ·   console: http://localhost:${port}/console\n`));
   return server;
 }

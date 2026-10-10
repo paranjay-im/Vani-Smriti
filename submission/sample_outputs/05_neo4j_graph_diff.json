@@ -1,0 +1,88 @@
+{
+  "glid": "245234426",
+  "store": "neo4j",
+  "created": [
+    {
+      "id": "F:245234426:seller_request:VS:sarvam-t1791622914809-request",
+      "label": "Fact",
+      "tier": "reasoning",
+      "ts": "2026-10-10 14:31:55",
+      "props": {
+        "type": "seller_request",
+        "evidence": "Catalogue or product update: Add product Rotary Drilling Rig, price on request, depth 300 ft",
+        "channel": "VANI voice"
+      },
+      "vis": {
+        "id": "F:245234426:seller_request:VS:sarvam-t1791622914809-request",
+        "label": "Fact: seller_request\n10 Oct",
+        "group": "Fact",
+        "tier": "reasoning",
+        "color": "#b5462f",
+        "shape": "diamond",
+        "font": {
+          "size": 12
+        },
+        "size": 12
+      }
+    },
+    {
+      "id": "VS:sarvam-t1791622914809-request",
+      "label": "VaniSession",
+      "tier": "short_term",
+      "ts": "2026-10-10 14:31:55",
+      "props": {
+        "channel": "voice",
+        "direction": "outbound",
+        "role": "seller",
+        "summary": "Seller request noted (Catalogue or product update)",
+        "outcome": "Seller request noted (Catalogue or product update)",
+        "end_ts": "2026-10-10 14:32:55",
+        "turns": "[]",
+        "synthetic": "true",
+        "llm": "sarvam",
+        "facts": "[{\"type\":\"seller_request\",\"evidence\":\"Catalogue or product update: Add product Rotary Drilling Rig, price on request, depth 300 ft\",\"due\":null}]"
+      },
+      "vis": {
+        "id": "VS:sarvam-t1791622914809-request",
+        "label": "VaniSession\n10 Oct",
+        "group": "VaniSession",
+        "tier": "short_term",
+        "color": "#1f8a5c",
+        "shape": "box",
+        "font": {
+          "color": "#ffffff",
+          "size": 12
+        },
+        "size": 12
+      }
+    }
+  ],
+  "updated": [],
+  "rels": [
+    [
+      "VS:sarvam-t1791622914809-request",
+      "WITH",
+      "S:245234426"
+    ],
+    [
+      "F:245234426:seller_request:VS:sarvam-t1791622914809-request",
+      "ABOUT",
+      "S:245234426"
+    ],
+    [
+      "F:245234426:seller_request:VS:sarvam-t1791622914809-request",
+      "DERIVED_FROM",
+      "VS:sarvam-t1791622914809-request"
+    ]
+  ],
+  "cypher": [
+    "MERGE (n:Node {id: 'F:245234426:seller_request:VS:sarvam-t1791622914809-request'}) SET n:Fact:Reasoning, n += {type, evidence, channel}",
+    "MERGE (n:Node {id: 'VS:sarvam-t1791622914809-request'}) SET n:VaniSession:ShortTerm, n += {channel, direction, role, summary, outcome, end_ts, …}",
+    "MATCH (a:Node {id: 'VS:sarvam-t1791622914809-request'}), (b:Node {id: 'S:245234426'}) MERGE (a)-[:WITH]->(b)",
+    "MATCH (a:Node {id: 'F:245234426:seller_request:VS:sarvam-t1791622914809-request'}), (b:Node {id: 'S:245234426'}) MERGE (a)-[:ABOUT]->(b)",
+    "MATCH (a:Node {id: 'F:245234426:seller_request:VS:sarvam-t1791622914809-request'}), (b:Node {id: 'VS:sarvam-t1791622914809-request'}) MERGE (a)-[:DERIVED_FROM]->(b)"
+  ],
+  "events": [
+    "vani_session"
+  ]
+}

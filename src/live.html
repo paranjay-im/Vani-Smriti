@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VANI Live</title>
+<script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+<style>
+:root{
+  --bg:#0b0f17;--panel:#121826;--panel2:#182033;--line:#243049;--ink:#e6ebf5;--muted:#8a96ad;
+  --accent:#ff7a1a;--accent2:#4da3ff;--ok:#35d07f;--warn:#ffc04d;--bad:#ff5d6c;--reason:#e0607a;
+  --mono:ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+/* The page is a column: the header takes the height it needs (it wraps on narrow windows), main gets the rest. */
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden;display:flex;flex-direction:column}
+*{scrollbar-width:thin;scrollbar-color:#2e3a55 transparent}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#2e3a55;border-radius:8px}
+::-webkit-scrollbar-thumb:hover{background:#3d4d70}
+button,select,input{font:inherit;color:inherit}
+button{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+button:hover:not(:disabled){border-color:var(--accent2)}
+button:disabled{opacity:.45;cursor:default}
+select,input{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+header{flex:0 0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 16px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,#141b2c,#0b0f17)}
+.brand{display:flex;flex-direction:column;line-height:1.1;flex:0 0 auto;white-space:nowrap}
+.brand b{font-size:18px;letter-spacing:.02em}.brand b span{color:var(--accent)}
+.brand small{color:var(--muted);font-size:11.5px}
+.sp{flex:1}
+/* Header blocks keep one width whatever the call state, so nothing reflows while VANI talks; a block that does not
+   fit moves to the next row as a whole. */
+.hgroup{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;flex:0 0 auto}
+#state{width:118px;justify-content:center}
+#iid{display:inline-block;width:250px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+#call{background:var(--ok);color:#06210f;border-color:var(--ok);font-weight:700;min-width:150px}
+#call.live{background:var(--bad);border-color:var(--bad);color:#fff}
+.orb{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#6b7a99,#2a3550);box-shadow:0 0 0 0 rgba(77,163,255,.0);transition:background .2s}
+.orb.listening{background:radial-gradient(circle at 35% 35%,#8fd0ff,#2a74d0)}
+.orb.speaking{background:radial-gradient(circle at 35% 35%,#ffc08a,#ff7a1a)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;background:var(--panel2);border:1px solid var(--line);font-size:12px;color:var(--muted);white-space:nowrap}
+.pill b{color:var(--ink);font-weight:600}
+.pill.neo b{color:#55d6be}
+#timer{font-variant-numeric:tabular-nums}
+main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(300px,27fr) minmax(300px,30fr) minmax(380px,43fr);gap:10px;padding:10px}
+/* Narrow windows: one column, and the page scrolls instead of cutting panels off. */
+@media (max-width:1100px){
+  body{display:block;overflow:auto;height:auto}
+  main{grid-template-columns:1fr}
+  .col{overflow:visible}
+  #timeline{max-height:65vh}
+  #net{min-height:360px}
+}
+.col{display:flex;flex-direction:column;gap:10px;min-height:0;overflow:auto}
+.col>.card:not(.grow){flex:0 0 auto}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;min-height:0}
+.card.grow{flex:1;display:flex;flex-direction:column}
+h2{margin:0 0 8px;font-size:11.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);display:flex;align-items:center;gap:8px}
+h2 .sp{flex:1}
+.muted{color:var(--muted)}.small{font-size:12px}
+/* conversation */
+#timeline{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:8px;padding-right:4px;overscroll-behavior:contain}
+.msg{max-width:88%;padding:7px 11px;border-radius:12px;font-size:14px;animation:in .25s ease-out;flex:0 0 auto;overflow-wrap:anywhere}
+.msg.bot{align-self:flex-start;background:#1d2943;border:1px solid #2b3d63}
+.msg.user{align-self:flex-end;background:#2b2316;border:1px solid #5a4322}
+.msg .who{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:2px}
+.chip{flex:0 0 auto;align-self:center;width:94%;border:1px dashed #3a4a6c;border-radius:10px;padding:7px 10px;font-size:12.5px;background:#111a2b;animation:in .25s ease-out}
+.chip .t{font-family:var(--mono);font-weight:700;color:var(--accent2)}
+.chip.ok{border-style:solid;border-color:#2c6b4c;background:#0f2119}
+.chip.ok .t{color:var(--ok)}
+.chip.fail{border-style:solid;border-color:#7a2f3a;background:#24121a}
+.chip .ms{float:right;font-family:var(--mono);color:var(--ok)}
+.chip .heard{margin-top:3px;color:#b9f3d2}
+.chip.sys{border-color:#5a4a7a;background:#17132a}
+.chip.sys .t{color:#c79bff}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* brain */
+.reason{font-size:16px;line-height:1.4;padding:10px 12px;border-left:3px solid var(--accent);background:#1b1610;border-radius:6px}
+.reason.dnc{border-color:var(--bad);background:#24121a}
+.seller{font-size:17px;font-weight:700}
+.loops{display:flex;flex-direction:column;gap:6px;max-height:170px;overflow:auto}
+.loop{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:12.5px}
+.loop b{font-family:var(--mono);font-size:11.5px;color:var(--warn)}
+.loop.req b{color:#c79bff}
+.loop.new{border-color:var(--ok);box-shadow:0 0 0 1px var(--ok) inset}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12.5px}
+.compare>div{background:var(--panel2);border-radius:8px;padding:8px}
+.compare b{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px}
+.compare .cold{color:#aab3c4}
+/* pipeline */
+.pipe{display:flex;flex-direction:column;gap:5px}
+.stage{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);font-size:12.5px;transition:all .25s}
+.stage i{width:9px;height:9px;border-radius:50%;background:#3a4560;flex:0 0 auto;transition:all .25s}
+.stage span{flex:1}
+.stage code{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.stage.on{border-color:var(--ok);background:#10251b}
+.stage.on i{background:var(--ok);box-shadow:0 0 10px var(--ok)}
+.next{padding:9px 11px;border-radius:8px;background:#151d31;border:1px solid #2f4a7a;font-size:13.5px}
+.next.changed{animation:glow 1.6s ease-out 2}
+@keyframes glow{0%{box-shadow:0 0 0 0 rgba(77,163,255,.7)}100%{box-shadow:0 0 0 12px rgba(77,163,255,0)}}
+/* changes */
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tabs button{padding:4px 10px;font-size:12.5px}
+.tabs button.on{background:var(--accent);border-color:var(--accent);color:#1a0d00;font-weight:700}
+.badge{display:inline-block;min-width:17px;padding:0 5px;border-radius:99px;background:var(--ok);color:#06210f;font-size:11px;text-align:center;margin-left:4px;font-weight:700}
+.pane{flex:1;min-height:0;overflow:auto;display:none;margin-top:8px}
+.pane.on{display:block}
+#graphPane.on{display:flex;flex-direction:column}
+#net{flex:1;min-height:280px;border-radius:8px;background:#0e1422;border:1px solid var(--line)}
+pre{margin:0;font:12px/1.5 var(--mono);white-space:pre-wrap;word-break:break-word}
+.diff div{padding:0 8px;border-left:3px solid transparent}
+.diff .add{background:rgba(53,208,127,.12);border-color:var(--ok);color:#b9f3d2}
+.diff .del{background:rgba(255,93,108,.12);border-color:var(--bad);color:#ffc1c8;text-decoration:line-through;text-decoration-color:rgba(255,93,108,.5)}
+.diff .ctx{color:#7f8aa1}
+.diff .gap{color:#4d5873;font-style:italic}
+.diff .fresh{animation:flash 2.2s ease-out}
+@keyframes flash{0%{background:rgba(53,208,127,.55)}100%{background:rgba(53,208,127,.12)}}
+table.gd{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+table.gd td{border-top:1px solid var(--line);padding:4px 6px;vertical-align:top}
+table.gd td:first-child{white-space:nowrap;font-family:var(--mono)}
+.tag{display:inline-block;font:700 10.5px var(--mono);padding:1px 6px;border-radius:4px}
+.tag.new{background:#16402b;color:var(--ok)}.tag.upd{background:#41340f;color:var(--warn)}.tag.rel{background:#16304f;color:var(--accent2)}
+.cy{margin-top:8px;padding:8px;background:#0e1422;border:1px solid var(--line);border-radius:8px;color:#9fe0d0}
+.legend{display:flex;gap:10px;font-size:11.5px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:middle}
+a{color:var(--accent2)}
+/* report card */
+#report{position:fixed;inset:0;background:rgba(5,8,14,.72);display:none;align-items:center;justify-content:center;z-index:5}
+#report.on{display:flex}
+#report .box{width:min(760px,92vw);max-height:86vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+#report h3{margin:0 0 4px;font-size:20px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+.stat{background:var(--panel2);border-radius:10px;padding:10px;text-align:center}
+.stat b{display:block;font-size:24px;color:var(--accent)}
+.stat span{font-size:11.5px;color:var(--muted)}
+.toast{position:fixed;right:16px;bottom:16px;background:var(--ink);color:var(--bg);padding:8px 12px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.on{opacity:.95}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><b>VANI <span>Live</span></b><small>IndiaMART seller memory · Sarvam voice agent</small></div>
+  <select id="seller" title="Seller to call"></select>
+  <input id="glid" placeholder="or any GLID" size="11">
+  <div class="hgroup">
+    <button id="call" disabled>▶ Call VANI</button>
+    <button id="mute" disabled title="Mute microphone">🎙</button>
+    <div class="orb" id="orb" title="Agent state"></div>
+    <span class="pill" id="state">idle</span>
+    <span class="pill">⏱ <b id="timer">00:00</b></span>
+  </div>
+  <div class="sp"></div>
+  <div class="hgroup">
+    <label class="pill"><input type="checkbox" id="follow" checked style="margin:0"> follow calls</label>
+    <span class="pill" id="iid" title="Sarvam interaction id">interaction –</span>
+    <span class="pill" id="storeKind">store –</span>
+    <button id="save" title="Download this session (for replay)">💾</button>
+    <button id="replay" title="Replay a saved session">⟲</button>
+  </div>
+</header>
+
+<main>
+  <!-- LEFT: the conversation, with every tool call in line -->
+  <section class="col">
+    <div class="card grow">
+      <h2>Conversation <span class="sp"></span><span class="small muted" id="convHint">browser mic or phone</span></h2>
+      <div id="timeline"></div>
+    </div>
+  </section>
+
+  <!-- MIDDLE: what the agent knows and how a write travels -->
+  <section class="col">
+    <div class="card">
+      <h2>Agent's memory of this seller <span class="sp"></span><button id="coldBtn" class="small" style="padding:2px 8px">cold vs context</button></h2>
+      <div class="seller" id="sName">Pick a seller</div>
+      <div class="small muted" id="sMeta"></div>
+      <div id="compare" class="compare" style="display:none;margin-top:8px">
+        <div><b>Without memory</b><span class="cold">"Namaste, main IndiaMART se bol rahi hoon. Aap kaun se products bechte hain? Aap kis city se hain? Kya aap IndiaMART ke paid plans ke baare mein jaanna chahenge?"</span></div>
+        <div><b>With the context layer</b><span id="warm"></span></div>
+      </div>
+      <h2 style="margin-top:10px">VANI opens with</h2>
+      <div class="reason" id="reason">–</div>
+      <h2 style="margin-top:10px">Open loops <span class="sp"></span><span class="small muted" id="loopCount"></span></h2>
+      <div class="loops" id="loops"></div>
+    </div>
+    <div class="card">
+      <h2>Write-back pipeline <span class="sp"></span><span class="small muted" id="pipeMs"></span></h2>
+      <div class="pipe" id="pipe"></div>
+    </div>
+    <div class="card">
+      <h2>Next call will open with</h2>
+      <div class="next" id="next"><span class="muted">Updates the moment something is written.</span></div>
+    </div>
+  </section>
+
+  <!-- RIGHT: what changed -->
+  <section class="col">
+    <div class="card grow">
+      <div class="tabs">
+        <button data-tab="md" class="on">seller.md diff<span id="mdBadge"></span></button>
+        <button data-tab="graph">Graph diff<span id="gBadge"></span></button>
+        <button data-tab="event">Event</button>
+        <button data-tab="file">Full file</button>
+        <span class="sp" style="flex:1"></span>
+        <label class="small muted" style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="cumul" checked style="margin:0"> since call start</label>
+      </div>
+      <div class="pane on diff" id="mdPane"><pre class="muted">The seller's context file. Lines VANI's call adds turn green.</pre></div>
+      <div class="pane" id="graphPane">
+        <div id="net"></div>
+        <div class="legend">
+          <span><i style="background:#2f6db5"></i>long-term</span><span><i style="background:#1f8a5c"></i>interactions</span><span><i style="background:#b5462f"></i>facts &amp; decisions</span>
+          <span><i style="background:#35d07f"></i>written by this call</span><span><i style="background:#ffc04d"></i>changed</span>
+          <span class="sp" style="flex:1"></span><a id="neoLink" target="_blank" rel="noopener" style="display:none">open in Neo4j Browser ↗</a>
+        </div>
+        <div id="gdTable"></div>
+      </div>
+      <div class="pane" id="eventPane"><pre class="muted">The vani_session event each tool call writes (the same line goes to store/events.jsonl).</pre></div>
+      <div class="pane" id="filePane"><pre class="muted">–</pre></div>
+    </div>
+  </section>
+</main>
+
+<div id="report"><div class="box">
+  <div class="small muted">Call report</div>
+  <h3 id="rTitle">–</h3>
+  <div id="rSummary" class="muted"></div>
+  <div class="stats">
+    <div class="stat"><b id="rTools">0</b><span>tool calls</span></div>
+    <div class="stat"><b id="rNodes">0</b><span>graph nodes written</span></div>
+    <div class="stat"><b id="rLines">0</b><span>file lines changed</span></div>
+    <div class="stat"><b id="rMs">–</b><span>median write (ms)</span></div>
+  </div>
+  <h2>Remembered from this call</h2>
+  <div id="rFacts" class="loops" style="max-height:none"></div>
+  <h2 style="margin-top:12px">Next call opens with</h2>
+  <div class="next" id="rNext">–</div>
+  <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
+    <button id="rClose">Close</button>
+    <button id="rAgain" style="background:var(--ok);color:#06210f;border-color:var(--ok);font-weight:700">▶ Call again</button>
+  </div>
+</div></div>
+
+<input type="file" id="replayFile" accept="application/json" style="display:none">
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { ConversationAgent, BrowserAudioInterface, InteractionType } from "/live/sdk.js";
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const api = async (method, url, body) => {
+  const r = await fetch(url, { method, headers: body ? { "content-type": "application/json" } : {}, body: body ? JSON.stringify(body) : undefined });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || `${r.status}`);
+  return d;
+};
+const toast = (t) => { const el = $("toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.h); toast.h = setTimeout(() => el.classList.remove("on"), 3000); };
+
+const TOOL = { request: "log_seller_request", meeting: "schedule_meeting_tool", callback: "schedule_callback_tool", dnc: "mark_do_not_call_tool" };
+const STAGES = [
+  ["agent", "Sarvam agent calls a tool", "VANI · v{v}"],
+  ["tunnel", "Cloudflare tunnel → context service", "X-GC-Token"],
+  ["route", "Route validates the request", "POST /sarvam/{kind}"],
+  ["event", "vani_session event appended", "store/events.jsonl"],
+  ["graph", "Graph updated", "{store}"],
+  ["file", "seller.md re-rendered", "out/sellers/{glid}.md"],
+];
+
+const S = {
+  cfg: null, store: "memory", glid: null, brief: null, baseMd: null, md: null, lastDiff: null,
+  agent: null, audio: null, phase: "idle", t0: null, log: [], call: null, net: null, nodes: null, edges: null, coldOn: false, replaying: false,
+};
+
+// ---------- setup ----------
+async function init() {
+  renderPipe();
+  const [cfg, health, samples] = await Promise.all([api("GET", "/sarvam/config"), api("GET", "/health"), api("GET", "/api/samples")]);
+  S.cfg = cfg; S.store = health.store;
+  renderPipe();
+  $("storeKind").innerHTML = `store <b>${health.store === "neo4j" ? "Neo4j" : "in-memory"}</b> · ${Number(health.nodes).toLocaleString("en-IN")} nodes`;
+  $("storeKind").classList.toggle("neo", health.store === "neo4j");
+  const opts = samples.samples.filter((s) => s.role === "seller");
+  // Demo sellers: a fresh waiting buyer, one with requests from earlier calls, a weak catalogue, a do-not-call.
+  const featured = [["11301189", "Jai Bharat Auto · buyer waiting"], ["107256507", "Hari Enterprises · buyer waiting"], ["272316904", "Inde Electricals · earlier requests"],
+    ["100160824", "Crystal Cove · catalogue"], ["93557756", "do-not-call"], ["11190573", "Ganesh Bag"]];
+  const seen = new Set();
+  const html = [];
+  for (const [g, tag] of featured) { seen.add(g); html.push(`<option value="${g}">${g}${tag ? ` · ${tag}` : ""}</option>`); }
+  for (const s of opts) if (!seen.has(s.glid)) { seen.add(s.glid); html.push(`<option value="${s.glid}">${esc(s.name)} · ${esc(s.tag)}</option>`); }
+  $("seller").innerHTML = html.join("");
+  setPhase("idle");
+  if (!cfg.ready) toast("SARVAM_API_KEY / org / workspace / app id missing in .env: phone mode only");
+  await selectSeller($("seller").value);
+  connect();
+}
+
+// Debug switches: /live?nograph (no vis-network) and /live?nofeed (no live feed).
+const NO_GRAPH = new URLSearchParams(location.search).has("nograph");
+const NO_FEED = new URLSearchParams(location.search).has("nofeed");
+const LOADED = Date.now();
+function connect() {
+  if (NO_FEED) return;
+  const es = new EventSource("/live/events");
+  // On connect the server replays its buffer. Only the last 10 minutes are shown (a page reopened mid-call catches up),
+  // and replayed history never pops the call report.
+  es.addEventListener("live", (m) => {
+    const ev = JSON.parse(m.data);
+    const at = Date.parse(ev.at);
+    if (S.replaying || at < LOADED - 10 * 60e3) return;
+    ev.history = at < LOADED;
+    handle(ev, true);
+  });
+  es.onerror = () => { /* the browser reconnects with Last-Event-ID */ };
+}
+
+async function selectSeller(glid, { keepCall = false } = {}) {
+  if (!glid) return;
+  S.glid = glid;
+  $("glid").value = glid;
+  const b = await api("GET", `/sarvam/preview?glid=${glid}`);
+  syncPicker(glid, `${glid} · ${b.found ? b.company : "not in the data"} (typed)`);
+  showBrief(b, { baseline: !keepCall });
+  loadGraph(glid);
+}
+
+// Keep the dropdown on the seller being shown. A GLID typed in the box that is not in the list gets one "typed" entry
+// at the top, reused for the next typed GLID.
+function syncPicker(glid, label) {
+  const sel = $("seller");
+  let o = [...sel.options].find((x) => x.value === glid);
+  if (!o) {
+    o = sel.querySelector("option[data-typed]") || sel.insertBefore(document.createElement("option"), sel.firstChild);
+    o.dataset.typed = "1";
+    o.value = glid;
+  }
+  if (o.dataset.typed) o.textContent = label;
+  sel.value = glid;
+}
+
+function showBrief(b, { baseline = false } = {}) {
+  S.brief = b;
+  $("sName").textContent = b.found ? b.company : `GLID ${b.glid} (not in the data)`;
+  $("sMeta").textContent = [b.glid, b.city, b.category, b.lead_bucket && `bucket: ${b.lead_bucket}`].filter(Boolean).join(" · ");
+  const dnc = b.contact_policy === "do_not_call";
+  $("reason").textContent = dnc ? "Do-not-call: apologise once, confirm, end the call." : b.call_reason;
+  $("reason").classList.toggle("dnc", dnc);
+  $("warm").textContent = dnc ? "\"Maaf kijiye… aapko is baare mein ab call nahi kiya jayega.\" (ends the call)" : `VANI, IndiaMART's virtual sales executive, raises: ${b.call_reason}`;
+  renderLoops(b.loops);
+  if (baseline) { S.baseMd = b.md; S.md = b.md; renderMd(); }
+  $("filePane").innerHTML = `<pre>${esc(b.md || "–")}</pre>`;
+}
+
+const LOOP_TEXT = (l) => {
+  const parts = { seller_request: l.text, promise: l.text, buyer_waiting_reply: `${l.product} · buyer from ${l.city}: "${l.ask || ""}"`, unanswered_enquiry: `${l.product} · buyer from ${l.city}`,
+    missed_buyer_call: `${l.product || ""} · buyer from ${l.city}`, callback_due: l.due, meeting_check: l.due, whatsapp_unfinished: l.topic, photo_pending: "photos not added to catalogue" };
+  return parts[l.type] ?? [l.product, l.city, l.ask].filter(Boolean).join(" · ");
+};
+function renderLoops(loops = [], fresh = new Set()) {
+  $("loopCount").textContent = loops.length ? `${loops.length} open · ranked` : "";
+  $("loops").innerHTML = loops.map((l, i) => `<div class="loop ${l.type === "seller_request" ? "req" : ""} ${fresh.has(l.ref) ? "new" : ""}"><b>${i + 1}. ${esc(l.type.replace(/_/g, " "))}</b> <span class="muted">${esc(l.on || "")}</span><br>${esc(LOOP_TEXT(l) || "")}</div>`).join("")
+    || `<span class="small muted">Nothing open: VANI falls back to the catalogue or the pitch hook.</span>`;
+}
+
+// ---------- graph ----------
+async function loadGraph(glid) {
+  try {
+    const d = await api("GET", `/live/graph?glid=${glid}`);
+    if (glid !== S.glid) return;
+    $("neoLink").style.display = d.neo4j_browser ? "" : "none";
+    if (d.neo4j_browser) $("neoLink").href = d.neo4j_browser;
+    S.nodes = new vis.DataSet(d.nodes);
+    S.edges = new vis.DataSet(d.edges.map((e, i) => ({ id: `e${i}`, ...e, color: { color: "#3a4a6c" }, font: { size: 9, color: "#8a96ad", strokeWidth: 0 } })));
+    if (S.net) { S.net.destroy(); S.net = null; }
+    ensureNet();
+  } catch (e) { $("net").innerHTML = `<div class="muted small" style="padding:10px">${esc(e.message)}</div>`; }
+}
+// vis-network is only drawn while its tab is visible: laid out in a hidden (0×0) pane it hangs the page.
+const graphVisible = () => $("graphPane").classList.contains("on") && $("net").offsetWidth > 0;
+function ensureNet() {
+  if (S.net || !S.nodes || !graphVisible() || NO_GRAPH) return;
+  const opts = { physics: { solver: "forceAtlas2Based", stabilization: { iterations: 150, fit: true } }, interaction: { hover: true },
+    nodes: { font: { color: "#e6ebf5", size: 11 } }, edges: { smooth: false } };
+  S.net = new vis.Network($("net"), { nodes: S.nodes, edges: S.edges }, opts);
+  S.net.once("stabilizationIterationsDone", () => S.net?.setOptions({ physics: { enabled: false } }));
+}
+
+function applyGraphDiff(d) {
+  if (!S.nodes) return;
+  const NEW = { background: "#35d07f", border: "#b9f3d2" };
+  for (const n of d.created) {
+    const v = n.vis || { id: n.id, label: `${n.label}`, shape: "diamond" };
+    const node = { ...v, color: NEW, font: { color: "#e6ebf5", size: 12 }, size: 18, borderWidth: 3 };
+    S.nodes.get(n.id) ? S.nodes.update(node) : S.nodes.add(node);
+  }
+  for (const n of d.updated) if (S.nodes.get(n.id)) S.nodes.update({ id: n.id, color: { background: "#ffc04d", border: "#fff2c4" }, borderWidth: 3 });
+  for (const [s, r, t] of d.rels) {
+    if (!S.nodes.get(s) || !S.nodes.get(t)) continue;
+    S.edges.add({ from: s, to: t, label: r, arrows: "to", color: { color: "#35d07f" }, width: 2.5, font: { size: 10, color: "#b9f3d2", strokeWidth: 0 } });
+  }
+  if (d.created.length && S.net && graphVisible()) S.net.fit({ nodes: [`S:${d.glid}`, ...d.created.map((n) => n.id)].filter((id) => S.nodes.get(id)), animation: { duration: 700 } });
+  // table
+  const rows = [
+    ...d.created.map((n) => `<tr><td><span class="tag new">NEW</span> ${esc(n.label)}</td><td><code>${esc(n.id)}</code><br><span class="muted">${esc(Object.entries(n.props).filter(([k]) => !["glid"].includes(k)).slice(0, 5).map(([k, v]) => `${k}: ${v}`).join(" · "))}</span></td></tr>`),
+    ...d.updated.map((n) => `<tr><td><span class="tag upd">SET</span> ${esc(n.label)}</td><td><code>${esc(n.id)}</code><br>${Object.entries(n.changes).slice(0, 6).map(([k, [a, b]]) => `<span class="muted">${esc(k)}:</span> ${esc(a ?? "∅")} → <b>${esc(b ?? "∅")}</b>`).join("<br>")}</td></tr>`),
+    ...d.rels.map(([s, r, t]) => `<tr><td><span class="tag rel">REL</span> ${esc(r)}</td><td><code>${esc(s)}</code> → <code>${esc(t)}</code></td></tr>`),
+  ];
+  const head = `<div class="small muted" style="margin-top:8px">${d.store === "neo4j" ? "Written to Neo4j in one transaction" : "Applied to the in-memory graph"} · ${d.created.length} nodes, ${d.updated.length} updates, ${d.rels.length} relationships</div>`;
+  $("gdTable").innerHTML = head + `<table class="gd">${rows.join("")}</table>` + (d.cypher?.length ? `<pre class="cy">${esc(d.cypher.join("\n"))}</pre>` : "");
+  bump("gBadge", d.created.length + d.updated.length);
+}
+
+// ---------- md diff ----------
+const VOLATILE = /^generated_at:/;
+function lineDiff(a, b) {
+  const A = (a || "").split("\n").filter((l) => !VOLATILE.test(l)), B = (b || "").split("\n").filter((l) => !VOLATILE.test(l));
+  const n = A.length, m = B.length, L = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i][j] = A[i] === B[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  const out = []; let i = 0, j = 0;
+  while (i < n && j < m) { if (A[i] === B[j]) { out.push([" ", A[i]]); i++; j++; } else if (L[i + 1][j] >= L[i][j + 1]) out.push(["-", A[i++]]); else out.push(["+", B[j++]]); }
+  while (i < n) out.push(["-", A[i++]]); while (j < m) out.push(["+", B[j++]]);
+  return out;
+}
+function renderMd(freshLines = new Set()) {
+  const diff = $("cumul").checked || !S.lastDiff ? lineDiff(S.baseMd || "", S.md || "") : S.lastDiff;
+  const changed = diff.filter(([k]) => k !== " ").length;
+  // Show changed lines with 2 lines of context; collapse the rest.
+  const keep = new Set();
+  diff.forEach(([k], i) => { if (k !== " ") for (let x = i - 2; x <= i + 2; x++) keep.add(x); });
+  const html = [];
+  let skipped = 0;
+  diff.forEach(([k, line], i) => {
+    if (changed && !keep.has(i)) { skipped++; return; }
+    if (skipped) { html.push(`<div class="gap">··· ${skipped} unchanged lines</div>`); skipped = 0; }
+    const cls = k === "+" ? "add" : k === "-" ? "del" : "ctx";
+    html.push(`<div class="${cls} ${k === "+" && freshLines.has(line) ? "fresh" : ""}">${k === " " ? "&nbsp;" : k} ${esc(line) || "&nbsp;"}</div>`);
+  });
+  if (skipped) html.push(`<div class="gap">··· ${skipped} unchanged lines</div>`);
+  $("mdPane").innerHTML = `<pre>${changed ? "" : `<div class="gap">No changes yet ${$("cumul").checked ? "since the call started" : ""}.</div>`}${html.join("")}</pre>`;
+  return changed;
+}
+$("cumul").onchange = () => renderMd();
+
+// ---------- pipeline ----------
+function renderPipe(vals = {}) {
+  $("pipe").innerHTML = STAGES.map(([id, name, code]) => `<div class="stage" id="st-${id}"><i></i><span>${name}</span><code>${esc(code.replace("{v}", S.cfg?.app_version || "?").replace("{store}", S.store === "neo4j" ? "Neo4j MERGE" : "in-memory graph").replace("{glid}", S.glid || "<glid>").replace("{kind}", vals.kind || "request"))}</code></div>`).join("");
+}
+function light(ids, delay = 160) {
+  ids.forEach((id, i) => setTimeout(() => $(`st-${id}`)?.classList.add("on"), i * delay));
+}
+function resetPipe(kind) { renderPipe({ kind }); }
+
+// ---------- timeline ----------
+function add(html, cls) {
+  const el = document.createElement("div");
+  el.className = cls;
+  el.innerHTML = html;
+  $("timeline").append(el);
+  $("timeline").scrollTop = $("timeline").scrollHeight;
+  return el;
+}
+const chips = new Map();
+function bump(id, n) { if (!n) return; const el = $(id); const c = (Number(el.dataset.n || 0) + n); el.dataset.n = c; el.innerHTML = `<span class="badge">${c}</span>`; }
+
+// ---------- live events ----------
+function handle(ev, live) {
+  if (live) S.log.push(ev);
+  const d = ev.data || {};
+  const mine = !d.glid || d.glid === S.glid;
+  switch (ev.type) {
+    case "call_start":
+      clearCall(); S.greeted = false; S.call = { at: ev.at, tools: 0, nodes: 0, facts: [], ms: [], loopsBefore: (S.brief?.loops || []).map((l) => l.ref) };
+      add(`<span class="t">● call started</span> · ${esc(d.mode || "")} · seller ${esc(d.glid)}`, "chip sys");
+      break;
+    case "transcript":
+      $("convHint").textContent = "live transcript · tool calls inline";
+      showLine(d);
+      break;
+    case "context":
+      if (!mine && $("follow").checked && d.glid && S.phase === "idle") { S.glid = d.glid; $("glid").value = d.glid; syncPicker(d.glid, `${d.glid} · ${d.company || "seller"} (phone call)`); loadGraph(d.glid); }
+      if (d.glid !== S.glid) break;
+      if (!S.call) S.call = { at: ev.at, tools: 0, nodes: 0, facts: [], ms: [], loopsBefore: (d.loops || []).map((l) => l.ref) };
+      // The platform may load the context more than once per call; the diff baseline is the first load.
+      showBrief(d, { baseline: !S.call.based });
+      S.call.based = true;
+      add(`<span class="t">on_start · load_seller_context</span><span class="ms">${d.ms} ms</span><div class="heard">VANI received ${esc(d.company)}'s memory: ${d.loops.length} open loops · opening: ${esc(d.call_reason)}</div>`, "chip ok");
+      light(["agent", "tunnel"]);
+      break;
+    case "tool_in": {
+      if (d.body?.glid && d.body.glid !== S.glid) break;
+      resetPipe(d.kind);
+      const b = d.body || {};
+      const what = d.kind === "request" ? `${b.request_type}: ${b.details}` : d.kind === "meeting" ? `${b.meeting_date} ${b.meeting_time} · ${[b.locality, b.city].filter(Boolean).join(", ")}`
+        : d.kind === "callback" ? `${b.callback_date || ""} ${b.callback_time || b.callback_datetime || ""}` : b.reason || "";
+      chips.set(ev.id, { what, el: add(`<span class="t">🛠 ${TOOL[d.kind] || d.kind}</span><span class="ms">…</span><div>${esc(what)}</div>`, "chip") });
+      light(["agent", "tunnel", "route"]);
+      if (S.call) S.call.tools++;
+      break;
+    }
+    case "graph_diff":
+      if (!mine) break;
+      applyGraphDiff(d);
+      if (S.call) { S.call.nodes += d.created.length; S.call.facts.push(...d.created.filter((n) => n.label === "Fact")); }
+      light(["event", "graph"], 120);
+      if (d.created.length) $("eventPane").innerHTML = `<pre>${esc(JSON.stringify(d.created.find((n) => n.label === "VaniSession") || d.created[0], null, 2))}</pre>`;
+      break;
+    case "md_diff": {
+      if (!mine) break;
+      S.lastDiff = d.diff;
+      S.md = d.md;
+      if (S.baseMd == null) S.baseMd = d.md;
+      const fresh = new Set(d.diff.filter(([k]) => k === "+").map(([, l]) => l));
+      renderMd(fresh);
+      bump("mdBadge", fresh.size);
+      $("filePane").innerHTML = `<pre>${esc(d.md)}</pre>`;
+      setTimeout(() => light(["file"], 0), 300);
+      $("pipeMs").textContent = `${d.ms} ms end to end`;
+      break;
+    }
+    case "tool_out": {
+      const c = chips.get(d.call), el = c?.el;
+      const html = `<span class="t">${d.ok ? "✓" : "✗"} ${TOOL[d.kind] || d.kind}</span><span class="ms">${d.ms} ms</span>${c ? `<div>${esc(c.what)}</div>` : ""}<div class="heard">VANI hears: "${esc(d.message)}"</div>`;
+      if (el) { el.className = `chip ${d.ok ? "ok" : "fail"}`; el.innerHTML = html; } else add(html, `chip ${d.ok ? "ok" : "fail"}`);
+      if (d.event) $("eventPane").innerHTML = `<pre>${esc(JSON.stringify(d.event, null, 2))}</pre>`;
+      if (S.call && d.ingest_ms != null) S.call.ms.push(d.ingest_ms);
+      break;
+    }
+    case "next_call": {
+      if (!mine) break;
+      const before = new Set((S.brief?.loops || []).map((l) => l.ref));
+      const fresh = new Set(d.loops.filter((l) => !before.has(l.ref)).map((l) => l.ref));
+      S.brief = { ...S.brief, ...d };
+      renderLoops(d.loops, fresh);
+      const dnc = d.contact_policy === "do_not_call";
+      $("next").innerHTML = dnc ? `<b style="color:var(--bad)">Do not call.</b> Campaigns and the dialer skip this seller from now on.` : esc(d.call_reason);
+      $("next").classList.remove("changed"); void $("next").offsetWidth; $("next").classList.add("changed");
+      break;
+    }
+    case "call_end":
+      add(`<span class="t">■ call ended</span>${d.reason ? ` · ${esc(d.reason)}` : ""}`, "chip sys");
+      if (!ev.history) setTimeout(() => showReport(), 900);
+      break;
+    case "end":
+      if (!mine) break;
+      if (!$("timeline").querySelector(".msg.live")) showTranscript(d.turns || []);
+      S.greeted = false; // the next call (browser or phone) shows its own greeting
+      add(`<span class="t">on_end · save_call_outcome</span><span class="ms">${d.ingest_ms ?? "–"} ms</span><div class="heard">${esc(d.outcome)} · ${d.turns?.length || 0} turns saved as a VaniSession${d.facts?.length ? ` · facts: ${d.facts.map((f) => f.type).join(", ")}` : ""}</div>`, "chip ok");
+      if (S.call) S.call.end = d;
+      if (S.phase === "idle" && !ev.history) setTimeout(() => showReport(), 900); // also phone calls, which have no browser session
+      break;
+  }
+}
+
+// A live transcript line. Sarvam can send a line more than once while it grows (first cut off mid-sentence, then in
+// full), and the other speaker's line can arrive in between. A line that continues an earlier line from the same
+// speaker (same id, or the same text extended) replaces it and moves to the end, so the conversation reads in order.
+const normLine = (t) => String(t || "").replace(/\s+/g, " ").replace(/[\s.,।…]+$/, "").trim();
+function showLine(d) {
+  const role = d.role === "user" ? "user" : "bot";
+  const text = normLine(d.content);
+  if (!text) return;
+  const recent = [...$("timeline").querySelectorAll(".msg.live")].slice(-6).reverse();
+  const prev = (d.id && recent.find((el) => el.dataset.id === String(d.id))) || recent.find((el) => el.dataset.role === role);
+  if (prev && prev.dataset.role === role) {
+    const old = prev.dataset.text;
+    const sameId = d.id && prev.dataset.id === String(d.id);
+    if (!sameId && old === text) return; // repeated line
+    if (!sameId && old.length >= text.length && old.startsWith(text)) return; // an older, shorter version arriving late
+    if (sameId || (old.length >= 10 && text.startsWith(old))) prev.remove();
+  }
+  const el = add(`<span class="who">${role === "user" ? "Seller" : "VANI"}</span>${esc(d.content)}`, `msg live ${role}`);
+  el.dataset.role = role; el.dataset.text = text;
+  if (d.id) el.dataset.id = String(d.id);
+}
+
+// The agent's intro message. It plays the moment the call connects, before any transcript exists, so the page shows it
+// itself: live when VANI starts speaking in a browser call, or at the top of the transcript for a phone call.
+const GREETING = () => S.cfg?.greeting || "नमस्ते, मैं इंडियामार्ट से बोल रही हूँ।";
+function showGreeting() {
+  if (S.greeted) return;
+  S.greeted = true;
+  add(`<span class="who">VANI · greeting</span>${esc(GREETING())}`, "msg bot greet");
+}
+// Sarvam's transcript sometimes starts with the greeting (an agent turn in English, "Hello, I am calling from
+// IndiaMART.") and sometimes leaves it out and starts with the seller.
+const isGreetingTurn = (t) => t && t.speaker !== "seller" && /indiamart|इंडियामार्ट/i.test(t.text) && !/\?/.test(t.text) && t.text.length < 120;
+
+// The end-of-call transcript, after the greeting.
+function showTranscript(turns) {
+  const hasGreeting = isGreetingTurn(turns[0]);
+  if (S.greeted && hasGreeting) turns = turns.slice(1); // already shown live
+  if (!turns.length) return;
+  add(`<span class="t">transcript</span> · from the end-of-call save`, "chip sys");
+  if (!S.greeted && !hasGreeting) showGreeting(); // phone call, and Sarvam left the greeting out
+  for (const t of turns) add(`<span class="who">${t.speaker === "seller" ? "Seller" : "VANI"}</span>${esc(t.text)}`, `msg ${t.speaker === "seller" ? "user" : "bot"}`);
+}
+
+function clearCall() {
+  $("timeline").innerHTML = ""; chips.clear();
+  for (const id of ["mdBadge", "gBadge"]) { $(id).dataset.n = 0; $(id).innerHTML = ""; }
+  $("gdTable").innerHTML = ""; S.lastDiff = null; S.baseMd = S.brief?.md ?? null; S.md = S.baseMd; renderMd(); resetPipe();
+}
+
+function showReport() {
+  const c = S.call; if (!c) return;
+  $("rTitle").textContent = `${S.brief?.company || S.glid} · ${c.end?.outcome || "call finished"}`;
+  $("rSummary").textContent = c.end?.summary || "";
+  $("rTools").textContent = c.tools;
+  $("rNodes").textContent = c.nodes;
+  $("rLines").textContent = lineDiff(S.baseMd || "", S.md || "").filter(([k]) => k !== " ").length;
+  const ms = [...c.ms].sort((a, b) => a - b);
+  $("rMs").textContent = ms.length ? ms[Math.floor(ms.length / 2)].toFixed(1) : "–";
+  $("rFacts").innerHTML = c.facts.map((f) => `<div class="loop new"><b>${esc(f.props?.type || "fact")}</b><br>${esc(f.props?.evidence || "")}</div>`).join("") || `<span class="small muted">No new facts.</span>`;
+  $("rNext").innerHTML = $("next").innerHTML;
+  $("report").classList.add("on");
+}
+$("rClose").onclick = () => $("report").classList.remove("on");
+$("rAgain").onclick = () => { if (S.phase !== "idle") return; $("report").classList.remove("on"); startCall(); };
+
+// ---------- the call (Sarvam Web SDK, through the server's key-adding proxy) ----------
+const mark = (type, data) => api("POST", "/live/mark", { type, data }).catch(() => {});
+let tick;
+function setIid(id) {
+  $("iid").innerHTML = id ? `interaction <b>${esc(id)}</b>` : "interaction –";
+  $("iid").title = id ? `Sarvam interaction id: ${id}` : "Sarvam interaction id";
+}
+// Call phases: idle → connecting → live → ending → idle. One call at a time; the controls follow the phase.
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+function setPhase(p, label) {
+  S.phase = p;
+  const b = $("call");
+  b.textContent = { idle: "▶ Call VANI", connecting: "Connecting… ✕", live: "■ End call", ending: "Ending…" }[p];
+  b.classList.toggle("live", p === "connecting" || p === "live");
+  b.disabled = p === "ending" || (p === "idle" && !S.cfg?.ready);
+  $("mute").disabled = p !== "live";
+  if (p !== "live") $("mute").textContent = "🎙";
+  $("seller").disabled = $("glid").disabled = p !== "idle";
+  $("rAgain").disabled = p !== "idle";
+  if (label) $("state").textContent = label;
+  if (p === "idle") $("orb").className = "orb";
+}
+
+async function startCall() {
+  if (S.phase === "connecting" || S.phase === "live") return endCall("ended from the dashboard");
+  if (S.phase !== "idle") return;
+  const glid = $("glid").value.trim() || $("seller").value;
+  if (!/^\d+$/.test(glid)) return toast("GLID must be digits");
+  setPhase("connecting", "connecting…");
+  try { if (glid !== S.glid) await selectSeller(glid); } catch (e) { setPhase("idle", "idle"); return toast(e.message); }
+  await mark("call_start", { glid, mode: "browser mic", version: S.cfg.app_version });
+  const audio = new BrowserAudioInterface(16000);
+  const agent = new ConversationAgent({
+    apiKey: "", baseUrl: "/sarvam/runtime/",
+    config: {
+      org_id: S.cfg.org_id, workspace_id: S.cfg.workspace_id, app_id: S.cfg.app_id, ...(S.cfg.app_version ? { version: Number(S.cfg.app_version) } : {}),
+      user_identifier: `live-${glid}`, user_identifier_type: "custom", interaction_type: InteractionType.CALL,
+      input_sample_rate: 16000, output_sample_rate: 16000, agent_variables: { glid },
+    },
+    audioInterface: audio,
+    transcriptCallback: async (m) => {
+      if (!m?.content) return;
+      const id = m.message_id ?? m.id ?? m.turn_id ?? m.event_id ?? null;
+      const final = m.is_final ?? m.final ?? (m.status ? m.status !== "pending" : null);
+      mark("transcript", { glid, role: m.role === "user" ? "user" : "bot", content: m.content, id, final });
+    },
+    stateCallback: (st) => {
+      if (S.agent !== agent || S.phase === "ending") return; // the SDK reports "idle" on interaction_end while audio still plays
+      const s = String(st).toLowerCase();
+      if (s === "error") return endCall("connection error");
+      if (s.includes("speak")) showGreeting(); // the first thing VANI says is the intro message
+      if (S.phase !== "live") return;
+      $("state").textContent = s.includes("speak") ? "VANI speaking" : s.includes("listen") ? "listening" : s;
+      $("orb").className = `orb ${s.includes("listen") ? "listening" : s.includes("speak") ? "speaking" : ""}`;
+    },
+    eventCallback: async () => setIid(agent.getInteractionId?.()),
+    // interaction_end: the agent hung up. Its closing sentence is still in the playback queue, so let it finish.
+    endCallback: async () => { if (S.agent === agent) endCall("agent ended the call", { drain: true }); },
+  });
+  S.agent = agent; S.audio = audio;
+  // Sarvam streams transcript lines during the call for some sessions and not for others; without them the turns
+  // arrive with the end-of-call tool and are shown then. The tool calls appear live either way.
+  $("convHint").textContent = "tool calls live · transcript live or at the end";
+  setIid(null);
+  S.t0 = Date.now(); clearInterval(tick);
+  tick = setInterval(() => { const s = Math.floor((Date.now() - S.t0) / 1000); $("timer").textContent = `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`; }, 500);
+  try {
+    await agent.start();
+    if (!(await agent.waitForConnect(15))) throw new Error("could not connect to the Sarvam agent");
+    if (S.agent !== agent) return; // cancelled while connecting
+    setPhase("live", "listening");
+    $("orb").className = "orb listening";
+    setIid(agent.getInteractionId?.());
+    // A socket that closes without interaction_end (network drop, server close) never reaches endCallback.
+    agent.waitForDisconnect().then(() => { if (S.agent === agent) endCall("connection closed", { drain: true }); });
+  } catch (e) {
+    if (S.agent !== agent) return;
+    toast(e.name === "NotAllowedError" ? "Microphone permission denied" : `Call failed: ${e.message}`);
+    endCall(`failed: ${e.message}`);
+  }
+}
+
+// Wait until the SDK's playback queue is empty and nothing is playing (at most 20 s), so the last sentence is heard.
+async function drainAudio(agent, audio) {
+  const t0 = Date.now();
+  await sleep(300);
+  while (Date.now() - t0 < 20000) {
+    const queued = agent.agent?.audioQueue?.length ?? 0;
+    const playing = audio?.activeSources?.size ?? 0;
+    if (!queued && !playing) break;
+    await sleep(150);
+  }
+  await sleep(250);
+}
+
+async function endCall(reason, { drain = false } = {}) {
+  const agent = S.agent;
+  if (!agent || S.phase === "ending") return;
+  setPhase("ending", drain ? "VANI finishing…" : "ending…");
+  if (drain) { $("orb").className = "orb speaking"; await drainAudio(agent, S.audio); }
+  S.agent = null; S.audio = null;
+  clearInterval(tick);
+  try { await agent.stop(); } catch { /* already closed */ }
+  setPhase("idle", "idle");
+  mark("call_end", { glid: S.glid, reason });
+}
+// Leaving the page ends the session instead of leaving it open on Sarvam's side.
+window.addEventListener("pagehide", () => { try { S.agent?.stop(); } catch { /* closing */ } });
+$("call").onclick = startCall;
+$("mute").onclick = () => { if (!S.agent) return; if (S.agent.isMuted()) { S.agent.unmute(); $("mute").textContent = "🎙"; } else { S.agent.mute(); $("mute").textContent = "🔇"; } };
+$("seller").onchange = () => { if (!S.agent) { clearCall(); selectSeller($("seller").value); } };
+$("glid").onchange = () => { const g = $("glid").value.trim(); if (!S.agent && /^\d+$/.test(g)) { clearCall(); selectSeller(g); } };
+$("coldBtn").onclick = () => { S.coldOn = !S.coldOn; $("compare").style.display = S.coldOn ? "" : "none"; };
+for (const b of document.querySelectorAll(".tabs button[data-tab]")) b.onclick = () => {
+  for (const x of document.querySelectorAll(".tabs button[data-tab]")) x.classList.toggle("on", x === b);
+  for (const p of ["md", "graph", "event", "file"]) $(`${p}Pane`).classList.toggle("on", p === b.dataset.tab);
+  if (b.dataset.tab === "graph") { $(`gBadge`).dataset.n = 0; $("gBadge").innerHTML = ""; setTimeout(() => { ensureNet(); S.net?.fit(); }, 50); }
+  if (b.dataset.tab === "md") { $("mdBadge").dataset.n = 0; $("mdBadge").innerHTML = ""; }
+};
+
+// ---------- save / replay (a safety net for recording the demo) ----------
+$("save").onclick = () => {
+  const blob = new Blob([JSON.stringify({ glid: S.glid, events: S.log }, null, 1)], { type: "application/json" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `vani-live-${S.glid}-${Date.now()}.json`; a.click();
+};
+$("replay").onclick = () => $("replayFile").click();
+$("replayFile").onchange = async () => {
+  const f = $("replayFile").files[0]; if (!f) return;
+  const { glid, events } = JSON.parse(await f.text());
+  S.replaying = true; clearCall();
+  await selectSeller(glid);
+  const start = Date.parse(events[0]?.at || 0);
+  const t0 = Date.now();
+  for (const ev of events) {
+    const wait = Date.parse(ev.at) - start - (Date.now() - t0);
+    if (wait > 0) await new Promise((r) => setTimeout(r, Math.min(wait, 8000)));
+    handle(ev, false);
+  }
+  S.replaying = false;
+};
+
+init().catch((e) => toast(e.message));
+</script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+{
+  "glid": "245234426",
+  "found": true,
+  "company": "PT More Enterprises",
+  "city": "Indore",
+  "category": "Embroidered Applique Patches",
+  "call_reason": "the executive visit fixed for 2026-10-11 17:00: confirm it still suits the seller if it is upcoming, or ask whether it happened and helped",
+  "call_restrictions": "This seller is already in touch with an IndiaMart executive (last recorded: 10 Oct). Do not offer another executive visit unless the seller asks for one; help directly, and if a visit was fixed, ask once whether it happened and went well.",
+  "lead_bucket": "follow_up",
+  "pitch_hook": "a follow-up after the seller's previous meeting with an IndiaMART executive",
+  "contact_policy": "ok",
+  "flags": [
+    "meeting_fixed",
+    "not_interested_paid"
+  ],
+  "loops": [
+    {
+      "type": "meeting_check",
+      "on": "10 Oct",
+      "due": "2026-10-11 17:00:00",
+      "ref": "F:245234426:meeting_fixed:VS:sarvam-t1791574966058-meeting"
+    },
+    {
+      "type": "unanswered_enquiry",
+      "on": "1 Oct",
+      "product": "Silicone Half Heel Protector",
+      "city": "Bhopal",
+      "ref": "ENQ:3185539669"
+    }
+  ],
+  "call_datetime": "2026-10-10 14:31, Saturday",
+  "from_tunnel": false,
+  "ms": 135.5
+}

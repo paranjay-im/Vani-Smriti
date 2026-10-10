@@ -6,7 +6,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { factView } from "./extract.js";
-import { addMin, daysBetween, dmy, norm } from "./time.js";
+import { addMin, daysBetween, dmy, istNow, norm } from "./time.js";
 import { ROOT, SARVAM } from "./config.js";
 
 // Values the organisers' prompt needs that no record holds: who the agent is and when executives can visit.
@@ -180,7 +180,9 @@ export function outcomeFacts(v, skip = new Set()) {
   if (yes(v.do_not_call_requested)) add("do_not_call", "Asked IndiaMART to stop calls (Sarvam agent call)");
   if (yes(v.meeting_fixed)) add("meeting_fixed", `Meeting booked by the Sarvam agent${s(v.meeting_datetime) ? ` for ${s(v.meeting_datetime)}` : ""}${s(v.meeting_location) ? ` at ${s(v.meeting_location)}` : ""}`, parseWhen(v.meeting_datetime));
   if (s(v.callback_datetime)) add("callback_requested", `Asked to be called back at ${s(v.callback_datetime)}`, parseWhen(v.callback_datetime));
-  const obj = s(v.objection_type);
+  // objection_type comes from Sarvam's post-call extraction, which labels calls that had no objection too (a booked
+  // meeting came back as "Existing Engagement"). It only counts when the call did not end well.
+  const obj = ["Meeting Fixed", "Request Logged", "Helped"].includes(s(v.disposition_label)) || yes(v.meeting_fixed) ? "" : s(v.objection_type);
   if (/Wrong Contact/i.test(obj)) add("wrong_contact", "Said this is the wrong number / not the right business");
   if (/Existing Engagement/i.test(obj)) add("already_met_executive", "Said they are already in touch with an IndiaMART executive");
   if (/Explicit Disinterest/i.test(obj) && !yes(v.do_not_call_requested)) add("not_interested_paid", "Not interested in a meeting with an executive right now");
@@ -239,6 +241,8 @@ export function toolCall(kind, b, { ts }) {
     const place = [s(b.locality), s(b.city)].filter(Boolean).join(", ");
     if (!when) return { ok: false, message: "The date or time was not clear. Confirm one specific day and time with the seller." };
     if (!place) return { ok: false, message: "The meeting location is missing. Confirm the locality and city with the seller." };
+    if (when <= ts) return { ok: false, message: "That date and time has already passed. Work the day out again from the current date and confirm a future day and time with the seller." };
+    if (when.slice(0, 10) === ts.slice(0, 10) && AGENT_DEFAULTS.same_day_meeting_allowed !== "1") return { ok: false, message: "Same-day visits are not available. Offer the next day instead." };
     const mins = Number(when.slice(11, 13)) * 60 + Number(when.slice(14, 16));
     if (mins < SLOT.from || mins > SLOT.to) return { ok: false, message: "That time is outside the executive's working hours of 10 AM to 7 PM. Offer the nearest time inside that window." };
     const r = mk("meeting_fixed", `Meeting booked by the Sarvam agent for ${when.slice(0, 16)} at ${place}`, when, `Meeting booked for ${when.slice(0, 16)} at ${place}`);
@@ -248,6 +252,7 @@ export function toolCall(kind, b, { ts }) {
     const when = parseWhen(b.callback_date, b.callback_time) || parseWhen(b.callback_datetime);
     const said = s(b.callback_datetime) || [s(b.callback_date), s(b.callback_time)].filter(Boolean).join(" ");
     if (!when && !said) return { ok: false, message: "No callback time was given. Ask once for a day and time." };
+    if (when && when <= ts) return { ok: false, message: "That callback time has already passed. Work the day out again from the current date and confirm a future time with the seller." };
     const r = mk("callback_requested", `Asked to be called back at ${when ? when.slice(0, 16) : said}`, when, `Callback requested for ${when ? when.slice(0, 16) : said}`);
     return { ...r, message: `Callback saved for ${when ? when.slice(0, 16) : said}.` };
   }
@@ -272,7 +277,8 @@ const fromTunnel = (req) => Boolean(req.headers["cf-connecting-ip"] || req.heade
 
 // Returns a handler (req, res, url, route) -> true when it answered. It also guards the whole server: a request that
 // came through the public tunnel may only reach the Sarvam routes above, and those need the shared token when one is set.
-export function sarvamRoutes({ store, clock, setClock, ingest, outDir, send, body }) {
+// hub: the live dashboard feed (src/live.js); every step of a call is also emitted there.
+export function sarvamRoutes({ store, clock, setClock, ingest, outDir, send, body, hub = { emit() {} } }) {
   const done = new Set(); // whole-call sessions already applied (a webhook may be delivered twice)
   // seller -> fact types saved by mid-call tools during the current call. Mid-call tools get no interaction id from the
   // platform (system variables reach only on_start / on_end tools), so the seller is the key; a record older than two
@@ -286,7 +292,11 @@ export function sarvamRoutes({ store, clock, setClock, ingest, outDir, send, bod
       fs.appendFileSync(payloadLog, JSON.stringify({ at: new Date().toISOString(), kind, data }) + "\n");
     } catch { /* logging must never break a call */ }
   };
-  const nextTs = () => { const t = clock(); setClock(addMin(t, 1)); return addMin(t, 1); };
+  // Sarvam calls happen in real time, but the server's clock is a data clock: it starts at the dataset's as-of date and
+  // moves only with logged events. So before a call reads or writes anything, the clock is moved up to the real time in
+  // India; the seller's file is then rendered for today and the call's events carry real timestamps.
+  const catchUp = () => { const now = istNow(); if (now > clock()) setClock(now); return clock(); };
+  const nextTs = () => { const t = addMin(catchUp(), 1 / 60); setClock(t); return t; }; // strictly increasing
   // The seller to use when the agent sends no glid. Text chat and the dashboard test cannot inject variables, so the
   // agent's glid default is empty and this picks the seller instead; a phone test or campaign passes its own glid.
   // Set locally with POST /sarvam/test-seller; kept in store/ so it survives a restart.
@@ -294,6 +304,27 @@ export function sarvamRoutes({ store, clock, setClock, ingest, outDir, send, bod
   let testGlid = SARVAM.test_glid;
   try { testGlid = fs.readFileSync(testFile, "utf8").trim() || testGlid; } catch { /* not set yet */ }
   const glidOr = (g) => s(g) || testGlid;
+
+  // The prompt's variables for one seller, rendered from the current graph, plus the file they came from.
+  async function contextFor(glid) {
+    if (!/^\d+$/.test(glid)) return { vars: sellerVars(null, glid || "0", { fm: null, md: "", asOf: clock() }), fm: null, md: "" };
+    try {
+      const w = await store().write("seller", glid, { asOf: clock(), outDir });
+      const graph = store().neighbourhood ? await store().neighbourhood(glid).catch(() => null) : null;
+      return { vars: sellerVars(graph, glid, { fm: w.fm, md: w.md, asOf: clock() }), fm: w.fm, md: w.md };
+    } catch (e) {
+      if (!e.status) throw e;
+      return { vars: sellerVars(null, glid, { fm: null, md: "", asOf: clock() }), fm: null, md: "" }; // no file: the call still goes on, cold
+    }
+  }
+  // What the dashboard shows about a seller: who, why VANI calls, what is open.
+  const brief = ({ vars, fm, md }) => ({
+    glid: vars.glid, found: vars.found === "1", company: vars.seller_company_name, city: vars.seller_city, category: vars.category_name,
+    call_reason: vars.call_reason, call_restrictions: vars.call_restrictions, lead_bucket: vars.lead_bucket, pitch_hook: vars.pitch_hook,
+    contact_policy: fm?.contact_policy || null, flags: fm?.flags || [], loops: fm?.loops || [], md,
+  });
+  // After anything is written: what the next call to this seller would open with.
+  const nextCall = async (glid) => { try { hub.emit("next_call", brief(await contextFor(glid))); } catch { /* display only */ } };
 
   return async function handle(req, res, url, route) {
     const isSarvam = url.pathname.startsWith("/sarvam/");
@@ -314,22 +345,21 @@ export function sarvamRoutes({ store, clock, setClock, ingest, outDir, send, bod
     }
 
     if (route === "GET /sarvam/context") {
+      const t0 = performance.now();
       const glid = glidOr(url.searchParams.get("glid"));
-      let vars;
-      if (!/^\d+$/.test(glid)) vars = sellerVars(null, glid || "0", { fm: null, md: "", asOf: clock() });
-      else {
-        try {
-          const w = await store().write("seller", glid, { asOf: clock(), outDir });
-          const graph = store().neighbourhood ? await store().neighbourhood(glid).catch(() => null) : null;
-          vars = sellerVars(graph, glid, { fm: w.fm, md: w.md, asOf: clock() });
-        } catch (e) {
-          if (!e.status) throw e;
-          vars = sellerVars(null, glid, { fm: null, md: "", asOf: clock() }); // no file: the call still goes on, cold
-        }
-      }
+      catchUp();
+      const c = await contextFor(glid);
+      const vars = c.vars;
       vars.call_datetime = nowIst(); // real time of the call: meetings are booked in real days, not on the data clock
       note("context", { glid, found: vars.found });
+      hub.emit("context", { ...brief(c), call_datetime: vars.call_datetime, from_tunnel: fromTunnel(req), ms: +(performance.now() - t0).toFixed(1) });
       send(res, 200, vars);
+      return true;
+    }
+    // Local only: the same brief without a call (the dashboard shows it before dialling).
+    if (route === "GET /sarvam/preview") {
+      catchUp();
+      send(res, 200, brief(await contextFor(glidOr(url.searchParams.get("glid")))));
       return true;
     }
     if (["POST /sarvam/meeting", "POST /sarvam/callback", "POST /sarvam/dnc", "POST /sarvam/request"].includes(route)) {
@@ -337,6 +367,8 @@ export function sarvamRoutes({ store, clock, setClock, ingest, outDir, send, bod
       b.glid = glidOr(b.glid);
       const kind = route.split("/").at(-1);
       note(kind, b);
+      const t0 = performance.now();
+      const tin = hub.emit("tool_in", { kind, body: b, from_tunnel: fromTunnel(req) });
       const r = toolCall(kind, b, { ts: nextTs() });
       if (r.ok) {
         const g = r.event.row.glid;
@@ -344,33 +376,50 @@ export function sarvamRoutes({ store, clock, setClock, ingest, outDir, send, bod
         recorded.get(g).types.add(r.event.row.facts[0].type);
         const w = await ingest([r.event]);
         send(res, 200, { ok: true, message: r.message, files: w.files });
-      } else send(res, 200, { ok: false, message: r.message });
+        hub.emit("tool_out", { kind, call: tin.id, ok: true, message: r.message, event: r.event, files: w.files, ingest_ms: w.latency_ms, ms: +(performance.now() - t0).toFixed(1) });
+        await nextCall(g);
+      } else {
+        send(res, 200, { ok: false, message: r.message });
+        hub.emit("tool_out", { kind, call: tin.id, ok: false, message: r.message, ms: +(performance.now() - t0).toFixed(1) });
+      }
       return true;
     }
     if (route === "POST /sarvam/end") {
       const b = await body(req);
       note("end", b);
-      const ev = sarvamToSession(b, { ts: clock(), glid: testGlid || null, skip: savedFor });
-      if (!ev) { send(res, 200, { ok: false, message: "no seller GLID in the payload; logged only" }); return true; }
+      // The call started at interaction_start_time (IST); without it, it is placed so that it ends now.
+      const now = catchUp();
+      const start = norm(b.start_datetime);
+      const ts = start && start <= now ? start : addMin(now, -Math.max(1, Math.ceil(Number(b.duration || 0) / 60)));
+      const ev = sarvamToSession(b, { ts, glid: testGlid || null, skip: savedFor });
+      if (!ev) { send(res, 200, { ok: false, message: "no seller GLID in the payload; logged only" }); hub.emit("end", { ok: false, payload: b }); return true; }
       if (done.has(ev.row.session_id)) { send(res, 200, { ok: true, duplicate: true }); return true; }
       done.add(ev.row.session_id);
       recorded.delete(ev.row.glid); // the call is over
-      if (addMin(ev.row.end_ts, 2) > clock()) setClock(addMin(ev.row.end_ts, 2));
+      if (ev.row.end_ts > clock()) setClock(ev.row.end_ts);
       const w = await ingest([ev]);
       send(res, 200, { ok: true, session_id: ev.row.session_id, turns: ev.row.turns.length, facts: ev.row.facts.map((f) => f.type), ...w });
+      hub.emit("end", { ok: true, glid: ev.row.glid, session_id: ev.row.session_id, interaction_id: ev.row.interaction_id, outcome: ev.row.outcome, summary: ev.row.summary,
+        facts: ev.row.facts, turns: ev.row.turns, duration: b.duration ?? null, ingest_ms: w.latency_ms, from_tunnel: fromTunnel(req) });
+      await nextCall(ev.row.glid);
       return true;
     }
     // What the console needs to start a session with the agent (ids only, never the key).
     if (route === "GET /sarvam/config") {
-      const ready = Boolean(SARVAM.key && SARVAM.org_id && SARVAM.workspace_id && SARVAM.app_id);
-      send(res, 200, { ready, org_id: SARVAM.org_id, workspace_id: SARVAM.workspace_id, app_id: SARVAM.app_id, app_version: SARVAM.app_version || null });
+      const ready = Boolean((SARVAM.agents_key || SARVAM.key) && SARVAM.org_id && SARVAM.workspace_id && SARVAM.app_id);
+      send(res, 200, { ready, org_id: SARVAM.org_id, workspace_id: SARVAM.workspace_id, app_id: SARVAM.app_id, app_version: SARVAM.app_version || null, greeting: SARVAM.greeting });
       return true;
     }
     // Web SDK: the browser asks us for the signed WebSocket URL; we add the API key so it never reaches the page.
     if (req.method === "GET" && url.pathname.startsWith("/sarvam/runtime/")) {
-      if (!SARVAM.key) { send(res, 503, { error: "SARVAM_API_KEY is not set" }); return true; }
+      const key = SARVAM.agents_key || SARVAM.key;
+      if (!key) { send(res, 503, { error: "SARVAM_AGENTS_API_KEY is not set" }); return true; }
       const target = SARVAM.runtime + url.pathname.slice("/sarvam/runtime/".length) + url.search;
-      const r = await fetch(target, { headers: { "X-API-Key": SARVAM.key } });
+      let r;
+      try { r = await fetch(target, { headers: { "X-API-Key": key } }); } catch (e) {
+        send(res, 502, { error: `could not reach Sarvam (${e.cause?.code || e.message}); check the internet connection and try again` });
+        return true;
+      }
       res.writeHead(r.status, { "content-type": r.headers.get("content-type") || "application/json", "cache-control": "no-store" });
       res.end(Buffer.from(await r.arrayBuffer()));
       return true;

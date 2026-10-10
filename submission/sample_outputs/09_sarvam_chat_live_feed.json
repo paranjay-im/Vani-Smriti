@@ -1,0 +1,178 @@
+[
+  {
+    "id": 1,
+    "type": "context",
+    "at": "2026-10-10T09:03:48.260Z",
+    "data": {
+      "glid": "11190573",
+      "found": true,
+      "company": "Ganesh Bag",
+      "city": "Ahmedabad",
+      "category": "Backpacks",
+      "call_reason": "the seller's catalogue quality score is 12 out of 100; better photos, prices and specifications bring more enquiries",
+      "call_restrictions": "None.",
+      "lead_bucket": "profile_review",
+      "pitch_hook": "a free review of the seller's IndiaMART profile and catalogue",
+      "contact_policy": "verify_identity",
+      "flags": [
+        "wrong_contact"
+      ],
+      "loops": [],
+      "call_datetime": "2026-10-10 14:33, Saturday",
+      "from_tunnel": true,
+      "ms": 369.1
+    }
+  },
+  {
+    "id": 2,
+    "type": "context",
+    "at": "2026-10-10T09:03:56.131Z",
+    "data": {
+      "glid": "11190573",
+      "found": true,
+      "company": "Ganesh Bag",
+      "city": "Ahmedabad",
+      "category": "Backpacks",
+      "call_reason": "the seller's catalogue quality score is 12 out of 100; better photos, prices and specifications bring more enquiries",
+      "call_restrictions": "None.",
+      "lead_bucket": "profile_review",
+      "pitch_hook": "a free review of the seller's IndiaMART profile and catalogue",
+      "contact_policy": "verify_identity",
+      "flags": [
+        "wrong_contact"
+      ],
+      "loops": [],
+      "call_datetime": "2026-10-10 14:33, Saturday",
+      "from_tunnel": true,
+      "ms": 266.5
+    }
+  },
+  {
+    "id": 3,
+    "type": "md_diff",
+    "at": "2026-10-10T09:04:04.248Z",
+    "data": {
+      "glid": "11190573",
+      "diff": [
+        [
+          "-",
+          "as_of: \"2026-10-10 14:33\""
+        ],
+        [
+          "-",
+          "watermark: \"2026-10-10 13:19\""
+        ],
+        [
+          "+",
+          "as_of: \"2026-10-10 14:34\""
+        ],
+        [
+          "+",
+          "watermark: \"2026-10-10 14:33\""
+        ]
+      ],
+      "ms": 139.24
+    }
+  },
+  {
+    "id": 4,
+    "type": "graph_diff",
+    "at": "2026-10-10T09:04:04.248Z",
+    "data": {
+      "glid": "11190573",
+      "store": "neo4j",
+      "created": [
+        {
+          "id": "VS:sarvam-20261010/bfef8eca-14:33:53-5da2a26c",
+          "label": "VaniSession",
+          "tier": "short_term",
+          "ts": "2026-10-10 14:33:55",
+          "props": {
+            "channel": "voice",
+            "direction": "outbound",
+            "role": "seller",
+            "summary": "Sarvam agent call: General (talked).",
+            "outcome": "General (talked)",
+            "end_ts": "2026-10-10 14:34:55",
+            "turns": "[{\"speaker\":\"bot\",\"text\":\"Hello, I am Payal, a virtual sales executive from IndiaMART. The catalogue quality score in your account is only 12; improving this c…",
+            "synthetic": "true",
+            "llm": "sarvam"
+          },
+          "vis": {
+            "id": "VS:sarvam-20261010/bfef8eca-14:33:53-5da2a26c",
+            "label": "VaniSession\n10 Oct",
+            "group": "VaniSession",
+            "tier": "short_term",
+            "color": "#1f8a5c",
+            "shape": "box",
+            "font": {
+              "color": "#ffffff",
+              "size": 12
+            },
+            "size": 12
+          }
+        }
+      ],
+      "updated": [],
+      "rels": [
+        [
+          "VS:sarvam-20261010/bfef8eca-14:33:53-5da2a26c",
+          "WITH",
+          "S:11190573"
+        ]
+      ],
+      "cypher": [
+        "MERGE (n:Node {id: 'VS:sarvam-20261010/bfef8eca-14:33:53-5da2a26c'}) SET n:VaniSession:ShortTerm, n += {channel, direction, role, summary, outcome, end_ts, …}",
+        "MATCH (a:Node {id: 'VS:sarvam-20261010/bfef8eca-14:33:53-5da2a26c'}), (b:Node {id: 'S:11190573'}) MERGE (a)-[:WITH]->(b)"
+      ],
+      "events": [
+        "vani_session"
+      ]
+    }
+  },
+  {
+    "id": 5,
+    "type": "end",
+    "at": "2026-10-10T09:04:04.249Z",
+    "data": {
+      "ok": true,
+      "glid": "11190573",
+      "session_id": "sarvam-20261010/bfef8eca-14:33:53-5da2a26c",
+      "interaction_id": "20261010/bfef8eca-14:33:53-5da2a26c",
+      "outcome": "General (talked)",
+      "summary": "Sarvam agent call: General (talked).",
+      "facts": [],
+      "turns": [
+        {
+          "speaker": "bot",
+          "text": "Hello, I am Payal, a virtual sales executive from IndiaMART. The catalogue quality score in your account is only 12; improving this could help you get more enquiries. May I help you with this?",
+          "ts": "2026-10-10 14:33:55"
+        }
+      ],
+      "duration": 6,
+      "ingest_ms": 139.24,
+      "from_tunnel": true
+    }
+  },
+  {
+    "id": 6,
+    "type": "next_call",
+    "at": "2026-10-10T09:04:04.504Z",
+    "data": {
+      "glid": "11190573",
+      "found": true,
+      "company": "Ganesh Bag",
+      "city": "Ahmedabad",
+      "category": "Backpacks",
+      "call_reason": "the seller's catalogue quality score is 12 out of 100; better photos, prices and specifications bring more enquiries",
+      "call_restrictions": "None.",
+      "lead_bucket": "profile_review",
+      "pitch_hook": "a free review of the seller's IndiaMART profile and catalogue",
+      "contact_policy": "verify_identity",
+      "flags": [
+        "wrong_contact"
+      ],
+      "loops": []
+    }
+  }
+]

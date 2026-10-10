@@ -1,0 +1,11 @@
+{
+  "tool": "log_seller_request",
+  "route": "POST /sarvam/request",
+  "body": {
+    "glid": "245234426",
+    "request_type": "catalog_update",
+    "details": "Add product Rotary Drilling Rig, price on request, depth 300 ft"
+  },
+  "answer_spoken_from": "Noted for the IndiaMART team: Catalogue or product update. Tell the seller it is recorded on their account and the team will follow up. Do not promise a time.",
+  "round_trip_ms": 1130.1
+}

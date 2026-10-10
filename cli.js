@@ -95,7 +95,7 @@ const HELP = `Global Context — context layer (Node ${process.versions.node})
                                         Replay real events after the cutoff as a live stream; measure event -> file delay
   node cli.js ui [--port ${PORT}] [--llm]     Test console in the browser (separate test data, resettable)
   node cli.js serve [--port ${PORT}] [--llm] [--files-only]
-                                        HTTP context service (POST /events, GET /context/seller/<glid>, /bot/*).
+                                        HTTP context service + VANI Live at http://localhost:<port>/ (POST /events, GET /context/seller/<glid>, /sarvam/*).
                                         --files-only: serve only the sellers whose out/sellers/<glid>.md already exist; no CSV load
   node cli.js emit <glid> [--type enquiry|whatsapp|botcall] [--text "..."] [--product "..."] [--port ${PORT}]
                                         Send a synthetic live event to the running service and print the measured delay
@@ -228,7 +228,7 @@ async function main() {
       // Test console on its own event log and output folder, so testing never changes the real files.
       const port = Number(opt("port", PORT));
       await startServer({ port, llm: await useLlm(), log: path.join(ROOT, "store", "ui_events.jsonl"), outDir: path.join(OUT_DIR, "ui"), eager: false, scratch: !filesOnlyFlag(), filesOnly: filesOnlyFlag() });
-      console.log(`  open http://localhost:${port} in your browser  (Ctrl+C to stop)`);
+      console.log(`  open http://localhost:${port}/console in your browser  (Ctrl+C to stop)`);
       return;
     }
     case "test-seller": {

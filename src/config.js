@@ -63,12 +63,18 @@ export const NEO4J_TEST = { ...NEO4J, uri: process.env.NEO4J_TEST_URI || "bolt:/
 // agent; without a key the console falls back to the browser's speech recognition and synthesis.
 export const SARVAM = {
   key: process.env.SARVAM_API_KEY || "",
+  // Voice Agents API key (agents dashboard: Settings -> API Key) for the Web SDK proxy. Not the same as the speech-API
+  // key above (sk_...), which the runtime refuses with "Invalid API key format".
+  agents_key: process.env.SARVAM_AGENTS_API_KEY || "",
   base: process.env.SARVAM_BASE_URL || "https://api.sarvam.ai",
   runtime: process.env.SARVAM_RUNTIME_URL || "https://apps.sarvam.ai/api/app-runtime/",
   org_id: process.env.SARVAM_ORG_ID || "",
   workspace_id: process.env.SARVAM_WORKSPACE_ID || "",
   app_id: process.env.SARVAM_APP_ID || "",
   app_version: process.env.SARVAM_APP_VERSION || "",
+  // The agent's intro message. Sarvam's end-of-call transcript leaves it out (it plays before the conversation), so
+  // VANI Live adds it as the first line. Keep it equal to the agent's intro in its initial language.
+  greeting: process.env.SARVAM_GREETING || "नमस्ते, मैं इंडियामार्ट से बोल रही हूँ।",
   token: process.env.GC_SARVAM_TOKEN || "", // shared secret the agent's tools send as X-GC-Token
   test_glid: process.env.GC_SARVAM_TEST_GLID || "", // seller used when the agent sends no glid (text chat, dashboard test)
   stt_model: process.env.SARVAM_STT_MODEL || "saaras:v4",

@@ -26,7 +26,8 @@ export function shortProduct(p) {
   return s || String(p || "").slice(0, 40);
 }
 
-const LOOP_RANK = { promise: 0, buyer_waiting_reply: 1, callback_due: 2, meeting_check: 3, missed_buyer_call: 4,
+// seller_request: what the seller asked VANI for on an earlier call; followed up before anything new (after promises).
+const LOOP_RANK = { promise: 0, seller_request: 0.5, buyer_waiting_reply: 1, callback_due: 2, meeting_check: 3, missed_buyer_call: 4,
   unanswered_enquiry: 5, whatsapp_unfinished: 6, photo_pending: 7, seller_asked_buyer: 1, waiting_on_seller: 2, seller_replied_unread: 3 };
 
 const INTENT_TOPIC = (intent) =>
@@ -210,7 +211,9 @@ export function renderSeller(g, glid, { asOf = AS_OF, generatedAt = new Date().t
     unanswered_enquiry: (l) => `Buyer ${l.buyer} (${l.city}) enquired for ${l.product} — no seller reply yet${unanswered > 2 ? ` (+${unanswered - 2} more unanswered)` : ""}`,
     missed_buyer_call: (l) => `Buyer ${l.buyer} (${l.city}) called — not connected, no call back since`,
     callback_due: (l) => `Seller asked for a call back${l.due ? ` at ${dmyhm(l.due)}` : ""}`,
-    meeting_check: (l) => `Meeting fixed through VANI${l.due ? ` for ${dmyhm(l.due)}` : ""} — confirm it happened before pitching again`,
+    meeting_check: (l) => l.due && l.due > asOf
+      ? `Meeting fixed through VANI for ${dmyhm(l.due)} — upcoming; do not pitch another`
+      : `Meeting fixed through VANI${l.due ? ` for ${dmyhm(l.due)}` : ""} — confirm it happened before pitching again`,
     whatsapp_unfinished: (l) => `On WhatsApp the seller was ${l.topic} and stopped at "${l.ask}"`,
     photo_pending: () => `Uploaded product photos on WhatsApp that were not added to the catalog`,
     seller_request: (l) => `Seller asked VANI: ${l.text} — follow up and confirm it is done`,
@@ -296,7 +299,10 @@ export function renderSeller(g, glid, { asOf = AS_OF, generatedAt = new Date().t
   if (contactPolicy === "do_not_call") actions.push("Do not place outbound VANI calls. If the seller writes in, acknowledge the stop request first, then only help with their buyers.");
   if (contactPolicy === "verify_identity") actions.push("Confirm you are speaking to the business before sharing anything.");
   if (active("already_met_executive") || active("exec_contact")) actions.push("Do not pitch a meeting: an executive is already engaged. Offer help with open buyer loops instead.");
-  else if (active("meeting_fixed")) actions.push("Confirm whether the VANI-fixed meeting happened before any new pitch.");
+  else if (active("meeting_fixed")) {
+    const due = view.meeting_fixed.latest.props.due;
+    actions.push(due && due > asOf ? `An executive visit is booked for ${dmyhm(due)}: do not pitch another; confirm it still suits the seller.` : "Confirm whether the VANI-fixed meeting happened before any new pitch.");
+  }
   if (loops[0]?.type === "promise") actions.push(`Resume: ${loops[0].text}.`);
   if (active("seller_request")) actions.push("Follow up on the seller's open request before raising anything new.");
   else if (loops.some((l) => l.type === "buyer_waiting_reply" || l.type === "unanswered_enquiry")) actions.push("Help the seller reply to the waiting buyer (ask for price/MOQ, VANI drafts the reply).");

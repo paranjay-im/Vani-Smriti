@@ -13,6 +13,7 @@ import { ContextGraph } from "../graph.js";
 import { Pipeline } from "../ingest.js";
 import { normalize } from "../sources.js";
 import { writeContext } from "../render.js";
+import { graphDiff, snapOwned } from "../graphdiff.js";
 import { NEO4J } from "../config.js";
 import { encodeNode, decodeNode } from "./codec.js";
 
@@ -210,15 +211,19 @@ export class NeoStore {
 
   // Apply events one by one (hydrate -> Pipeline.apply -> diff -> one transaction). Returns the owners whose files
   // must be re-rendered, and, for a single event, the graph to render them from.
-  async apply(events, { persist = false } = {}) {
+  // diff: also return, per event, what the commit wrote around the event's seller (for the live dashboard).
+  async apply(events, { persist = false, diff = false } = {}) {
     const list = [].concat(events);
-    const out = { sellers: new Set(), buyers: new Set(), view: null };
+    const out = { sellers: new Set(), buyers: new Set(), view: null, changes: [] };
     for (const ev of list) {
       const a = await this.#serial(async () => {
         const owners = await this.ownersOf(ev);
         const g = await this.hydrate(owners);
+        const glids = ev.row?.glid ? [String(ev.row.glid)] : [];
+        const before = diff && glids.length ? snapOwned(g, glids) : null;
         const affected = new Pipeline(g).apply(ev, { persist: false });
         await this.#commit(g);
+        if (before) out.changes.push({ glid: glids[0], ...graphDiff(before, snapOwned(g, glids), { store: this.kind }) });
         if (persist && this.log) {
           fs.mkdirSync(path.dirname(this.log), { recursive: true });
           fs.appendFileSync(this.log, JSON.stringify({ source: ev.source, row: ev.row, received_at: new Date().toISOString() }) + "\n");

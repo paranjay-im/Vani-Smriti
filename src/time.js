@@ -16,6 +16,8 @@ export function norm(s) {
 
 export const addMin = (s, m) => fromMs(toMs(s) + m * 60000);
 export const addDays = (s, d) => addMin(s, d * 1440);
+// The real current time in India, in the same "YYYY-MM-DD HH:MM:SS" form as the data (IST, no zone).
+export const istNow = (now = Date.now()) => fromMs(now + 330 * 60000);
 // gc_buyer_call_extractions.call_date is UTC; every other file is IST.
 export const utcToIst = (s) => (norm(s) ? addMin(norm(s), 330) : null);
 export const daysBetween = (a, b) => (toMs(b) - toMs(a)) / 86400000;

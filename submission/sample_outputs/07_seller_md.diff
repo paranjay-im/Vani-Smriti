@@ -1,0 +1,58 @@
+--- out/sellers/245234426.md (before the tool call)
++++ out/sellers/245234426.md (after, 1127.84 ms)
+ ---
+ glid: "245234426"
+ role: "seller"
+ name: "PT More Enterprises"
+ city: "Indore, Madhya Pradesh"
+ as_of: "2026-10-10 14:31"
+-watermark: "2026-10-10 08:36"
++watermark: "2026-10-10 14:31"
+ cold_start: false
+ segment: "free"
+ contact_policy: "ok"
+-flags: ["meeting_fixed","not_interested_paid"]
+-loops: [{"type":"meeting_check","on":"10 Oct","due":"2026-10-11 17:00:00","ref":"F:245234426:meeting_fixed:VS:sarvam-t1791574966058-meeting"},{"type":"unanswered_enquiry","on":"1 Oct","product":"Silicone Half Heel Protector","city":"Bhopal","ref":"ENQ:3185539669"}]
++flags: ["meeting_fixed","seller_request","not_interested_paid"]
++loops: [{"type":"seller_request","on":"10 Oct","text":"Catalogue or product update: Add product Rotary Drilling Rig, price on request, depth 300 ft","ref":"F:245234426:seller_request:VS:sarvam-t1791622914809-request"},{"type":"meeting_check","on":"10 Oct","due":"2026-10-11 17:00:00","ref":"F:245234426:meeting_fixed:VS:sarvam-t1791574966058-meeting"},{"type":"unanswered_enquiry","on":"1 Oct","product":"Silicone Half Heel Protector","city":"Bhopal","ref":"ENQ:3185539669"}]
+ resume: null
+ channel_pref: "voice"
+ lang: ["Hindi","English"]
+ best_time: "16:00-18:00"
+ stats: {"enq_90d":3,"replied_90d":1,"buyer_calls_90d":1,"buyleads_45d":0,"vani_answered":11,"wa_read_30d":0.33}
+-tokens: 687
++tokens: 688
+ ---
+ # Seller · PT More Enterprises · Indore, Madhya Pradesh
+ 
+ **Who:** Proprietorship · Trader - Retailer · turnover 0 - 40 L · GST since 2025 · Free (vgFCPplus with PNS) · KYC ✓ mobile · email · GST · PAN
+ **Sells:** Embroidered Applique Patches, Fancy Laces, Floral Print Saree · buyers ask for: Silicone Half Heel Protector, F… (1), Fancy Laces (1), Embroidered Sequin Work Neck Pa… (1)
+ 
+ ## Do not re-ask / handle with care
+ - Meeting fixed through VANI — 10 Oct via VANI voice · 3× since 29 Jul · for 11 Oct 17:00 — "Meeting booked by the Sarvam agent for 2026-10-11 17:00 at Vijay Nagar, Indore"
+ - Not interested in paid plans right now — 18 Sep via VANI call · 2× since 29 Jul — "The lead initially expressed disinterest in paid services and asked for free leads."
+ 
+ ## Open loops
++- 10 Oct · Seller asked VANI: Catalogue or product update: Add product Rotary Drilling Rig, price on request, depth 300 ft — follow up and confirm it is done
+ - 10 Oct · Meeting fixed through VANI for 11 Oct 17:00 — upcoming; do not pitch another
+-- 1 Oct · Buyer B-8143 (Bhopal) enquired for Silicone Half Heel Protector — no seller reply yet
+ 
+ ## Leads (last 90 days)
+ - Enquiries: 3 from 3 buyers · seller replied to 1 (33%) · 0 unread
+ - Buyer calls: 1 · 0 connected (avg talk 0s) · 1 missed
+-- Recent: 1 Oct enquiry · Silicone Half Heel Protector, FREE SIZE · B-8143, Bhopal · no reply
+ 
+ ## Conversation history (latest first, all channels)
+-- 10 Oct · VANI voice · Sarvam agent call: General (talked) (Call Quality / Technical Failures). The call seems to have experienced a technical glitch or silence after the agent propo…
+-- 10 Oct · VANI voice · Sarvam agent call: General (talked).
++- 10 Oct · VANI voice · Seller request noted (Catalogue or product update)
+ 
+ ## Engagement
+ - VANI: 11 answered of 14 attempts (not interested 8, meeting fixed 2, call later / busy 1) · reachable 16:00-18:00 · speaks Hindi, English
+ - WhatsApp (30d): 3 from IndiaMART, 33% read · 0 from seller · last active 10 Oct (VANI voice)
+ 
+ ## Next best action
+ - An executive visit is booked for 11 Oct 17:00: do not pitch another; confirm it still suits the seller.
+-- Help the seller reply to the waiting buyer (ask for price/MOQ, VANI drafts the reply).
++- Follow up on the seller's open request before raising anything new.
+ 

@@ -1,0 +1,479 @@
+{
+ "glid": "107256507",
+ "events": [
+  {
+   "id": 481,
+   "type": "context",
+   "at": "2026-10-10T13:38:46.533Z",
+   "data": {
+    "glid": "107256507",
+    "found": true,
+    "company": "Hari Enterprises",
+    "city": "Prayagraj",
+    "category": "Ear Muffs",
+    "call_reason": "following up on the seller's earlier request: Reply to a waiting buyer: Reply to the Lucknow buyer for Pixel LED 5 inch: Rs 85 per piece for 40 pieces, dispatch in 2 days",
+    "call_restrictions": "None.",
+    "lead_bucket": "category_enquiries",
+    "pitch_hook": "the seller received 9 buyer enquiries in the last 30 days, including from buyers in Lucknow",
+    "contact_policy": "ok",
+    "flags": [
+     "seller_request"
+    ],
+    "loops": [
+     {
+      "type": "seller_request",
+      "on": "10 Oct",
+      "text": "Reply to a waiting buyer: Reply to the Lucknow buyer for Pixel LED 5 inch: Rs 85 per piece for 40 pieces, dispatch in 2 days",
+      "ref": "F:107256507:seller_request:VS:sarvam-t1791624246892-request"
+     },
+     {
+      "type": "buyer_waiting_reply",
+      "on": "28 Sep",
+      "product": "Pixel LED 5 inch",
+      "city": "Lucknow",
+      "ask": "Hi [name], 40 Piece kitne ka hai?",
+      "ref": "ENQ:3184185699"
+     },
+     {
+      "type": "unanswered_enquiry",
+      "on": "1 Oct",
+      "product": "Pixel LED 5 inch",
+      "city": "Kanpur",
+      "ref": "ENQ:3185415741"
+     }
+    ],
+    "md": "---\nglid: \"107256507\"\nrole: \"seller\"\nname: \"Hari Enterprises\"\ncity: \"Prayagraj, Uttar Pradesh\"\nas_of: \"2026-10-10 19:08\"\nwatermark: \"2026-10-10 14:54\"\ngenerated_at: \"2026-10-10T13:38:46.432Z\"\ncold_start: false\nsegment: \"free\"\ncontact_policy: \"ok\"\nflags: [\"seller_request\"]\nloops: [{\"type\":\"seller_request\",\"on\":\"10 Oct\",\"text\":\"Reply to a waiting buyer: Reply to the Lucknow buyer for Pixel LED 5 inch: Rs 85 per piece for 40 pieces, dispatch in 2 days\",\"ref\":\"F:107256507:seller_request:VS:sarvam-t1791624246892-request\"},{\"type\":\"buyer_waiting_reply\",\"on\":\"28 Sep\",\"product\":\"Pixel LED 5 inch\",\"city\":\"Lucknow\",\"ask\":\"Hi [name], 40 Piece kitne ka hai?\",\"ref\":\"ENQ:3184185699\"},{\"type\":\"unanswered_enquiry\",\"on\":\"1 Oct\",\"product\":\"Pixel LED 5 inch\",\"city\":\"Kanpur\",\"ref\":\"ENQ:3185415741\"}]\nresume: null\nchannel_pref: \"voice\"\nlang: []\nbest_time: null\nstats: {\"enq_90d\":12,\"replied_90d\":0,\"buyer_calls_90d\":2,\"buyleads_45d\":0,\"vani_answered\":0,\"wa_read_30d\":null}\ntokens: 694\n---\n# Seller · Hari Enterprises · Prayagraj, Uttar Pradesh\n\n**Who:** Proprietorship · Wholesaler/Distributor · turnover 0 - 40 L · GST since 2022 · Free (vgFCPplus with PNS(R)) · KYC ✓ mobile · email · GST · PAN\n**Sells:** Ear Muffs, Pixel LED Lights, Colorful Ear Muff · buyers ask for: Pixel LED 5 inch (Multi-color,… (8), Pumping Earmuff (1), 5m Pixel LED 5 inch (Multi-colo… (1)\n\n## Do not re-ask / handle with care\n- Nothing on record.\n\n## Open loops\n- 10 Oct · Seller asked VANI: Reply to a waiting buyer: Reply to the Lucknow buyer for Pixel LED 5 inch: Rs 85 per piece for 40 pieces, dispatch in 2 days — follow up and confirm it is done\n- 28 Sep · Buyer B-320F (Lucknow) on Pixel LED 5 inch: \"Hi [name], 40 Piece kitne ka hai?\" — no seller reply yet\n- 1 Oct · Buyer B-4E28 (Kanpur) enquired for Pixel LED 5 inch — no seller reply yet\n- 27 Sep · Buyer B-AEBD (Khalilabad) enquired for Pumping Earmuff — no seller reply yet\n\n## Leads (last 90 days)\n- Enquiries: 12 from 11 buyers · seller replied to 0 (0%) · 2 unread\n- Buyer calls: 2 · 0 connected (avg talk 0s) · 2 missed\n- Recent: 1 Oct enquiry · Pixel LED 5 inch (Multi-color, 50LEDs)… · B-4E28, Kanpur · no reply | 28 Sep enquiry · Pixel LED 5 inch (Multi-color, 50LEDs)… · B-320F, Lucknow · no reply\n\n## Conversation history (latest first, all channels)\n- 10 Oct · VANI voice · Seller request noted (Reply to a waiting buyer)\n- 10 Oct · VANI voice · Sarvam agent call: Call Later / Busy (No Seller Response / Engagement Drop).\n- 10 Oct · VANI voice · Sarvam agent call: General (talked) (No Seller Response / Engagement Drop).\n\n## Engagement\n- VANI: 0 answered of 3 attempts\n- WhatsApp (30d): no messages\n- Catalog: 32 products · quality score 24\n\n## Next best action\n- Follow up on the seller's open request before raising anything new.\n",
+    "call_datetime": "2026-10-10 19:08, Saturday",
+    "from_tunnel": false,
+    "ms": 141.1
+   }
+  },
+  {
+   "id": 482,
+   "type": "tool_in",
+   "at": "2026-10-10T13:38:46.601Z",
+   "data": {
+    "kind": "request",
+    "body": {
+     "glid": "107256507",
+     "request_type": "enquiry_reply",
+     "details": "Reply for the Lucknow buyer on Pixel LED 5 inch: Rs 450 per piece, MOQ 40 pieces, delivery in 4 days."
+    },
+    "from_tunnel": false
+   }
+  },
+  {
+   "id": 483,
+   "type": "md_diff",
+   "at": "2026-10-10T13:38:46.795Z",
+   "data": {
+    "glid": "107256507",
+    "diff": [
+     [
+      " ",
+      "---"
+     ],
+     [
+      " ",
+      "glid: \"107256507\""
+     ],
+     [
+      " ",
+      "role: \"seller\""
+     ],
+     [
+      " ",
+      "name: \"Hari Enterprises\""
+     ],
+     [
+      " ",
+      "city: \"Prayagraj, Uttar Pradesh\""
+     ],
+     [
+      " ",
+      "as_of: \"2026-10-10 19:08\""
+     ],
+     [
+      "-",
+      "watermark: \"2026-10-10 14:54\""
+     ],
+     [
+      "+",
+      "watermark: \"2026-10-10 19:08\""
+     ],
+     [
+      " ",
+      "cold_start: false"
+     ],
+     [
+      " ",
+      "segment: \"free\""
+     ],
+     [
+      " ",
+      "contact_policy: \"ok\""
+     ],
+     [
+      " ",
+      "flags: [\"seller_request\"]"
+     ],
+     [
+      "-",
+      "loops: [{\"type\":\"seller_request\",\"on\":\"10 Oct\",\"text\":\"Reply to a waiting buyer: Reply to the Lucknow buyer for Pixel LED 5 inch: Rs 85 per piece for 40 pieces, dispatch in 2 days\",\"ref\":\"F:107256507:seller_request:VS:sarvam-t1791624246892-request\"},{\"type\":\"buyer_waiting_reply\",\"on\":\"28 Sep\",\"product\":\"Pixel LED 5 inch\",\"city\":\"Lucknow\",\"ask\":\"Hi [name], 40 Piece kitne ka hai?\",\"ref\":\"ENQ:3184185699\"},{\"type\":\"unanswered_enquiry\",\"on\":\"1 Oct\",\"product\":\"Pixel LED 5 inch\",\"city\":\"Kanpur\",\"ref\":\"ENQ:3185415741\"}]"
+     ],
+     [
+      "+",
+      "loops: [{\"type\":\"seller_request\",\"on\":\"10 Oct\",\"text\":\"Reply to a waiting buyer: Reply for the Lucknow buyer on Pixel LED 5 inch: Rs 450 per piece, MOQ 40 pieces, delivery in 4 days.\",\"ref\":\"F:107256507:seller_request:VS:sarvam-t1791639526601-request\"},{\"type\":\"seller_request\",\"on\":\"10 Oct\",\"text\":\"Reply to a waiting buyer: Reply to the Lucknow buyer for Pixel LED 5 inch: Rs 85 per piece for 40 pieces, dispatch in 2 days\",\"ref\":\"F:107256507:seller_request:VS:sarvam-t1791624246892-request\"},{\"type\":\"buyer_waiting_reply\",\"on\":\"28 Sep\",\"product\":\"Pixel LED 5 inch\",\"city\":\"Lucknow\",\"ask\":\"Hi [name], 40 Piece kitne ka hai?\",\"ref\":\"ENQ:3184185699\"}]"
+     ],
+     [
+      " ",
+      "resume: null"
+     ],
+     [
+      " ",
+      "channel_pref: \"voice\""
+     ],
+     [
+      " ",
+      "lang: []"
+     ],
+     [
+      " ",
+      "best_time: null"
+     ],
+     [
+      " ",
+      "stats: {\"enq_90d\":12,\"replied_90d\":0,\"buyer_calls_90d\":2,\"buyleads_45d\":0,\"vani_answered\":0,\"wa_read_30d\":null}"
+     ],
+     [
+      "-",
+      "tokens: 694"
+     ],
+     [
+      "+",
+      "tokens: 675"
+     ],
+     [
+      " ",
+      "---"
+     ],
+     [
+      " ",
+      "# Seller · Hari Enterprises · Prayagraj, Uttar Pradesh"
+     ],
+     [
+      " ",
+      ""
+     ],
+     [
+      " ",
+      "**Who:** Proprietorship · Wholesaler/Distributor · turnover 0 - 40 L · GST since 2022 · Free (vgFCPplus with PNS(R)) · KYC ✓ mobile · email · GST · PAN"
+     ],
+     [
+      " ",
+      "**Sells:** Ear Muffs, Pixel LED Lights, Colorful Ear Muff · buyers ask for: Pixel LED 5 inch (Multi-color,… (8), Pumping Earmuff (1), 5m Pixel LED 5 inch (Multi-colo… (1)"
+     ],
+     [
+      " ",
+      ""
+     ],
+     [
+      " ",
+      "## Do not re-ask / handle with care"
+     ],
+     [
+      " ",
+      "- Nothing on record."
+     ],
+     [
+      " ",
+      ""
+     ],
+     [
+      " ",
+      "## Open loops"
+     ],
+     [
+      "+",
+      "- 10 Oct · Seller asked VANI: Reply to a waiting buyer: Reply for the Lucknow buyer on Pixel LED 5 inch: Rs 450 per piece, MOQ 40 pieces, delivery in 4 days. — follow up and confirm it is done"
+     ],
+     [
+      " ",
+      "- 10 Oct · Seller asked VANI: Reply to a waiting buyer: Reply to the Lucknow buyer for Pixel LED 5 inch: Rs 85 per piece for 40 pieces, dispatch in 2 days — follow up and confirm it is done"
+     ],
+     [
+      " ",
+      "- 28 Sep · Buyer B-320F (Lucknow) on Pixel LED 5 inch: \"Hi [name], 40 Piece kitne ka hai?\" — no seller reply yet"
+     ],
+     [
+      "-",
+      "- 1 Oct · Buyer B-4E28 (Kanpur) enquired for Pixel LED 5 inch — no seller reply yet"
+     ],
+     [
+      "-",
+      "- 27 Sep · Buyer B-AEBD (Khalilabad) enquired for Pumping Earmuff — no seller reply yet"
+     ],
+     [
+      " ",
+      ""
+     ],
+     [
+      " ",
+      "## Leads (last 90 days)"
+     ],
+     [
+      " ",
+      "- Enquiries: 12 from 11 buyers · seller replied to 0 (0%) · 2 unread"
+     ],
+     [
+      " ",
+      "- Buyer calls: 2 · 0 connected (avg talk 0s) · 2 missed"
+     ],
+     [
+      "-",
+      "- Recent: 1 Oct enquiry · Pixel LED 5 inch (Multi-color, 50LEDs)… · B-4E28, Kanpur · no reply | 28 Sep enquiry · Pixel LED 5 inch (Multi-color, 50LEDs)… · B-320F, Lucknow · no reply"
+     ],
+     [
+      "+",
+      "- Recent: 1 Oct enquiry · Pixel LED 5 inch (Multi-color, 50LEDs)… · B-4E28, Kanpur · no reply"
+     ],
+     [
+      " ",
+      ""
+     ],
+     [
+      " ",
+      "## Conversation history (latest first, all channels)"
+     ],
+     [
+      " ",
+      "- 10 Oct · VANI voice · Seller request noted (Reply to a waiting buyer)"
+     ],
+     [
+      " ",
+      "- 10 Oct · VANI voice · Sarvam agent call: Call Later / Busy (No Seller Response / Engagement Drop)."
+     ],
+     [
+      "-",
+      "- 10 Oct · VANI voice · Sarvam agent call: General (talked) (No Seller Response / Engagement Drop)."
+     ],
+     [
+      " ",
+      ""
+     ],
+     [
+      " ",
+      "## Engagement"
+     ],
+     [
+      " ",
+      "- VANI: 0 answered of 3 attempts"
+     ],
+     [
+      " ",
+      "- WhatsApp (30d): no messages"
+     ],
+     [
+      "-",
+      "- Catalog: 32 products · quality score 24"
+     ],
+     [
+      " ",
+      ""
+     ],
+     [
+      " ",
+      "## Next best action"
+     ],
+     [
+      " ",
+      "- Follow up on the seller's open request before raising anything new."
+     ],
+     [
+      " ",
+      ""
+     ]
+    ],
+    "md": "---\nglid: \"107256507\"\nrole: \"seller\"\nname: \"Hari Enterprises\"\ncity: \"Prayagraj, Uttar Pradesh\"\nas_of: \"2026-10-10 19:08\"\nwatermark: \"2026-10-10 19:08\"\ngenerated_at: \"2026-10-10T13:38:46.788Z\"\ncold_start: false\nsegment: \"free\"\ncontact_policy: \"ok\"\nflags: [\"seller_request\"]\nloops: [{\"type\":\"seller_request\",\"on\":\"10 Oct\",\"text\":\"Reply to a waiting buyer: Reply for the Lucknow buyer on Pixel LED 5 inch: Rs 450 per piece, MOQ 40 pieces, delivery in 4 days.\",\"ref\":\"F:107256507:seller_request:VS:sarvam-t1791639526601-request\"},{\"type\":\"seller_request\",\"on\":\"10 Oct\",\"text\":\"Reply to a waiting buyer: Reply to the Lucknow buyer for Pixel LED 5 inch: Rs 85 per piece for 40 pieces, dispatch in 2 days\",\"ref\":\"F:107256507:seller_request:VS:sarvam-t1791624246892-request\"},{\"type\":\"buyer_waiting_reply\",\"on\":\"28 Sep\",\"product\":\"Pixel LED 5 inch\",\"city\":\"Lucknow\",\"ask\":\"Hi [name], 40 Piece kitne ka hai?\",\"ref\":\"ENQ:3184185699\"}]\nresume: null\nchannel_pref: \"voice\"\nlang: []\nbest_time: null\nstats: {\"enq_90d\":12,\"replied_90d\":0,\"buyer_calls_90d\":2,\"buyleads_45d\":0,\"vani_answered\":0,\"wa_read_30d\":null}\ntokens: 675\n---\n# Seller · Hari Enterprises · Prayagraj, Uttar Pradesh\n\n**Who:** Proprietorship · Wholesaler/Distributor · turnover 0 - 40 L · GST since 2022 · Free (vgFCPplus with PNS(R)) · KYC ✓ mobile · email · GST · PAN\n**Sells:** Ear Muffs, Pixel LED Lights, Colorful Ear Muff · buyers ask for: Pixel LED 5 inch (Multi-color,… (8), Pumping Earmuff (1), 5m Pixel LED 5 inch (Multi-colo… (1)\n\n## Do not re-ask / handle with care\n- Nothing on record.\n\n## Open loops\n- 10 Oct · Seller asked VANI: Reply to a waiting buyer: Reply for the Lucknow buyer on Pixel LED 5 inch: Rs 450 per piece, MOQ 40 pieces, delivery in 4 days. — follow up and confirm it is done\n- 10 Oct · Seller asked VANI: Reply to a waiting buyer: Reply to the Lucknow buyer for Pixel LED 5 inch: Rs 85 per piece for 40 pieces, dispatch in 2 days — follow up and confirm it is done\n- 28 Sep · Buyer B-320F (Lucknow) on Pixel LED 5 inch: \"Hi [name], 40 Piece kitne ka hai?\" — no seller reply yet\n\n## Leads (last 90 days)\n- Enquiries: 12 from 11 buyers · seller replied to 0 (0%) · 2 unread\n- Buyer calls: 2 · 0 connected (avg talk 0s) · 2 missed\n- Recent: 1 Oct enquiry · Pixel LED 5 inch (Multi-color, 50LEDs)… · B-4E28, Kanpur · no reply\n\n## Conversation history (latest first, all channels)\n- 10 Oct · VANI voice · Seller request noted (Reply to a waiting buyer)\n- 10 Oct · VANI voice · Sarvam agent call: Call Later / Busy (No Seller Response / Engagement Drop).\n\n## Engagement\n- VANI: 0 answered of 3 attempts\n- WhatsApp (30d): no messages\n\n## Next best action\n- Follow up on the seller's open request before raising anything new.\n",
+    "ms": 191.67
+   }
+  },
+  {
+   "id": 484,
+   "type": "graph_diff",
+   "at": "2026-10-10T13:38:46.796Z",
+   "data": {
+    "glid": "107256507",
+    "store": "neo4j",
+    "created": [
+     {
+      "id": "VS:sarvam-t1791639526601-request",
+      "label": "VaniSession",
+      "tier": "short_term",
+      "ts": "2026-10-10 19:08:47",
+      "props": {
+       "channel": "voice",
+       "direction": "outbound",
+       "role": "seller",
+       "summary": "Seller request noted (Reply to a waiting buyer)",
+       "outcome": "Seller request noted (Reply to a waiting buyer)",
+       "end_ts": "2026-10-10 19:09:47",
+       "turns": "[]",
+       "synthetic": "true",
+       "llm": "sarvam",
+       "facts": "[{\"type\":\"seller_request\",\"evidence\":\"Reply to a waiting buyer: Reply for the Lucknow buyer on Pixel LED 5 inch: Rs 450 per piece, MOQ 40 pieces, delivery in 4…"
+      },
+      "vis": {
+       "id": "VS:sarvam-t1791639526601-request",
+       "label": "VaniSession\n10 Oct",
+       "group": "VaniSession",
+       "tier": "short_term",
+       "color": "#1f8a5c",
+       "shape": "box",
+       "font": {
+        "color": "#ffffff",
+        "size": 12
+       },
+       "size": 12
+      }
+     },
+     {
+      "id": "F:107256507:seller_request:VS:sarvam-t1791639526601-request",
+      "label": "Fact",
+      "tier": "reasoning",
+      "ts": "2026-10-10 19:08:47",
+      "props": {
+       "type": "seller_request",
+       "evidence": "Reply to a waiting buyer: Reply for the Lucknow buyer on Pixel LED 5 inch: Rs 450 per piece, MOQ 40 pieces, delivery in 4 days.",
+       "channel": "VANI voice"
+      },
+      "vis": {
+       "id": "F:107256507:seller_request:VS:sarvam-t1791639526601-request",
+       "label": "Fact: seller_request\n10 Oct",
+       "group": "Fact",
+       "tier": "reasoning",
+       "color": "#b5462f",
+       "shape": "diamond",
+       "font": {
+        "size": 12
+       },
+       "size": 12
+      }
+     }
+    ],
+    "updated": [],
+    "rels": [
+     [
+      "VS:sarvam-t1791639526601-request",
+      "WITH",
+      "S:107256507"
+     ],
+     [
+      "F:107256507:seller_request:VS:sarvam-t1791639526601-request",
+      "ABOUT",
+      "S:107256507"
+     ],
+     [
+      "F:107256507:seller_request:VS:sarvam-t1791639526601-request",
+      "DERIVED_FROM",
+      "VS:sarvam-t1791639526601-request"
+     ]
+    ],
+    "cypher": [
+     "MERGE (n:Node {id: 'VS:sarvam-t1791639526601-request'}) SET n:VaniSession:ShortTerm, n += {channel, direction, role, summary, outcome, end_ts, …}",
+     "MERGE (n:Node {id: 'F:107256507:seller_request:VS:sarvam-t1791639526601-request'}) SET n:Fact:Reasoning, n += {type, evidence, channel}",
+     "MATCH (a:Node {id: 'VS:sarvam-t1791639526601-request'}), (b:Node {id: 'S:107256507'}) MERGE (a)-[:WITH]->(b)",
+     "MATCH (a:Node {id: 'F:107256507:seller_request:VS:sarvam-t1791639526601-request'}), (b:Node {id: 'S:107256507'}) MERGE (a)-[:ABOUT]->(b)",
+     "MATCH (a:Node {id: 'F:107256507:seller_request:VS:sarvam-t1791639526601-request'}), (b:Node {id: 'VS:sarvam-t1791639526601-request'}) MERGE (a)-[:DERIVED_FROM]->(b)"
+    ],
+    "events": [
+     "vani_session"
+    ]
+   }
+  },
+  {
+   "id": 485,
+   "type": "tool_out",
+   "at": "2026-10-10T13:38:46.798Z",
+   "data": {
+    "kind": "request",
+    "call": 482,
+    "ok": true,
+    "message": "Noted for the IndiaMART team: Reply to a waiting buyer. Tell the seller it is recorded on their account and the team will follow up. Do not promise a time.",
+    "event": {
+     "source": "vani_session",
+     "row": {
+      "session_id": "sarvam-t1791639526601-request",
+      "glid": "107256507",
+      "role": "seller",
+      "channel": "voice",
+      "direction": "outbound",
+      "ts": "2026-10-10 19:08:47",
+      "end_ts": "2026-10-10 19:09:47",
+      "summary": "Seller request noted (Reply to a waiting buyer)",
+      "outcome": "Seller request noted (Reply to a waiting buyer)",
+      "turns": [],
+      "decisions": [],
+      "facts": [
+       {
+        "type": "seller_request",
+        "evidence": "Reply to a waiting buyer: Reply for the Lucknow buyer on Pixel LED 5 inch: Rs 450 per piece, MOQ 40 pieces, delivery in 4 days.",
+        "due": null
+       }
+      ],
+      "llm": "sarvam",
+      "interaction_id": "t1791639526601"
+     }
+    },
+    "files": [
+     "sellers\\107256507.md"
+    ],
+    "ingest_ms": 191.67,
+    "ms": 196.9
+   }
+  },
+  {
+   "id": 486,
+   "type": "next_call",
+   "at": "2026-10-10T13:38:47.011Z",
+   "data": {
+    "glid": "107256507",
+    "found": true,
+    "company": "Hari Enterprises",
+    "city": "Prayagraj",
+    "category": "Ear Muffs",
+    "call_reason": "following up on the seller's earlier request: Reply to a waiting buyer: Reply for the Lucknow buyer on Pixel LED 5 inch: Rs 450 per piece, MOQ 40 pieces, delivery in 4 days.",
+    "call_restrictions": "None.",
+    "lead_bucket": "category_enquiries",
+    "pitch_hook": "the seller received 9 buyer enquiries in the last 30 days, including from buyers in Lucknow",
+    "contact_policy": "ok",
+    "flags": [
+     "seller_request"
+    ],
+    "loops": [
+     {
+      "type": "seller_request",
+      "on": "10 Oct",
+      "text": "Reply to a waiting buyer: Reply for the Lucknow buyer on Pixel LED 5 inch: Rs 450 per piece, MOQ 40 pieces, delivery in 4 days.",
+      "ref": "F:107256507:seller_request:VS:sarvam-t1791639526601-request"
+     },
+     {
+      "type": "seller_request",
+      "on": "10 Oct",
+      "text": "Reply to a waiting buyer: Reply to the Lucknow buyer for Pixel LED 5 inch: Rs 85 per piece for 40 pieces, dispatch in 2 days",
+      "ref": "F:107256507:seller_request:VS:sarvam-t1791624246892-request"
+     },
+     {
+      "type": "buyer_waiting_reply",
+      "on": "28 Sep",
+      "product": "Pixel LED 5 inch",
+      "city": "Lucknow",
+      "ask": "Hi [name], 40 Piece kitne ka hai?",
+      "ref": "ENQ:3184185699"
+     }
+    ],
+    "md": "---\nglid: \"107256507\"\nrole: \"seller\"\nname: \"Hari Enterprises\"\ncity: \"Prayagraj, Uttar Pradesh\"\nas_of: \"2026-10-10 19:08\"\nwatermark: \"2026-10-10 19:08\"\ngenerated_at: \"2026-10-10T13:38:46.941Z\"\ncold_start: false\nsegment: \"free\"\ncontact_policy: \"ok\"\nflags: [\"seller_request\"]\nloops: [{\"type\":\"seller_request\",\"on\":\"10 Oct\",\"text\":\"Reply to a waiting buyer: Reply for the Lucknow buyer on Pixel LED 5 inch: Rs 450 per piece, MOQ 40 pieces, delivery in 4 days.\",\"ref\":\"F:107256507:seller_request:VS:sarvam-t1791639526601-request\"},{\"type\":\"seller_request\",\"on\":\"10 Oct\",\"text\":\"Reply to a waiting buyer: Reply to the Lucknow buyer for Pixel LED 5 inch: Rs 85 per piece for 40 pieces, dispatch in 2 days\",\"ref\":\"F:107256507:seller_request:VS:sarvam-t1791624246892-request\"},{\"type\":\"buyer_waiting_reply\",\"on\":\"28 Sep\",\"product\":\"Pixel LED 5 inch\",\"city\":\"Lucknow\",\"ask\":\"Hi [name], 40 Piece kitne ka hai?\",\"ref\":\"ENQ:3184185699\"}]\nresume: null\nchannel_pref: \"voice\"\nlang: []\nbest_time: null\nstats: {\"enq_90d\":12,\"replied_90d\":0,\"buyer_calls_90d\":2,\"buyleads_45d\":0,\"vani_answered\":0,\"wa_read_30d\":null}\ntokens: 675\n---\n# Seller · Hari Enterprises · Prayagraj, Uttar Pradesh\n\n**Who:** Proprietorship · Wholesaler/Distributor · turnover 0 - 40 L · GST since 2022 · Free (vgFCPplus with PNS(R)) · KYC ✓ mobile · email · GST · PAN\n**Sells:** Ear Muffs, Pixel LED Lights, Colorful Ear Muff · buyers ask for: Pixel LED 5 inch (Multi-color,… (8), Pumping Earmuff (1), 5m Pixel LED 5 inch (Multi-colo… (1)\n\n## Do not re-ask / handle with care\n- Nothing on record.\n\n## Open loops\n- 10 Oct · Seller asked VANI: Reply to a waiting buyer: Reply for the Lucknow buyer on Pixel LED 5 inch: Rs 450 per piece, MOQ 40 pieces, delivery in 4 days. — follow up and confirm it is done\n- 10 Oct · Seller asked VANI: Reply to a waiting buyer: Reply to the Lucknow buyer for Pixel LED 5 inch: Rs 85 per piece for 40 pieces, dispatch in 2 days — follow up and confirm it is done\n- 28 Sep · Buyer B-320F (Lucknow) on Pixel LED 5 inch: \"Hi [name], 40 Piece kitne ka hai?\" — no seller reply yet\n\n## Leads (last 90 days)\n- Enquiries: 12 from 11 buyers · seller replied to 0 (0%) · 2 unread\n- Buyer calls: 2 · 0 connected (avg talk 0s) · 2 missed\n- Recent: 1 Oct enquiry · Pixel LED 5 inch (Multi-color, 50LEDs)… · B-4E28, Kanpur · no reply\n\n## Conversation history (latest first, all channels)\n- 10 Oct · VANI voice · Seller request noted (Reply to a waiting buyer)\n- 10 Oct · VANI voice · Sarvam agent call: Call Later / Busy (No Seller Response / Engagement Drop).\n\n## Engagement\n- VANI: 0 answered of 3 attempts\n- WhatsApp (30d): no messages\n\n## Next best action\n- Follow up on the seller's open request before raising anything new.\n"
+   }
+  }
+ ]
+}
