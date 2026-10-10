@@ -113,6 +113,15 @@ A typical demo, with seller `11301189` (Jai Bharat Auto Agencies, New Delhi):
 
 ## 3. Architecture
 
+![VANI Smriti system architecture: 11 data sources are built into a Neo4j context graph with long-term, short-term and reasoning memory, rendered into a 700-token seller.md per seller, read by the Sarvam voice agent at call start through a Cloudflare tunnel, and written back in one Neo4j transaction during the call; the VANI Smriti page holds the call through the Sarvam Web SDK and shows every change live.](submission/architecture.svg)
+
+The diagram reads left to right:
+1. **Data sources** go through the **build** into the **memory**: the Neo4j graph and the seller files.
+2. The **context service** connects that memory to the **Sarvam voice agent**, through the Cloudflare tunnel.
+3. The **browser** runs the call and shows every change as it happens.
+
+The numbered badges follow one call, step by step (the strip at the bottom of the diagram). The file is [`submission/architecture.svg`](submission/architecture.svg).
+
 ### 3.1 The pieces
 
 ```mermaid
