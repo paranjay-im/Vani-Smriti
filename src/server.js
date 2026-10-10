@@ -1,6 +1,6 @@
 // Context service + test console. Event-driven: POST /events -> ingest -> re-render affected files ->
 // respond with the measured delay. The bot (or any team) reads files with GET /context/:role/:glid.
-// GET / serves VANI Live (src/live.html), the main page; the developer console (src/ui.html) is at /console.
+// GET / serves VANI Smriti (src/live.html), the main page; the developer console (src/ui.html) is at /console.
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
@@ -186,7 +186,7 @@ export async function startServer({ port = PORT, llm = false, log = EVENT_LOG, o
       const route = `${req.method} ${url.pathname}`;
       if (await sarvam(req, res, url, route)) return; // also blocks everything else for requests from the public tunnel
 
-      // VANI Live, the main page: a Sarvam call next to everything it changes. Local only (tunnel guard in sarvam.js).
+      // VANI Smriti, the main page: a Sarvam call next to everything it changes. Local only (tunnel guard in sarvam.js).
       // /live is kept as an alias for old links.
       if (route === "GET /" || route === "GET /live") return send(res, 200, fs.readFileSync(LIVE, "utf8"), "text/html");
       if (route === "GET /console" || route === "GET /ui") return send(res, 200, fs.readFileSync(UI, "utf8"), "text/html");
@@ -266,11 +266,11 @@ export async function startServer({ port = PORT, llm = false, log = EVENT_LOG, o
         const out = route === "POST /voice/stt" ? await speechToText(await raw(req)) : await textToSpeech((await body(req)).text || "");
         return send(res, 200, { ...out, ms: Math.round(performance.now() - t0) });
       }
-      return send(res, 404, { error: "not found", routes: ["GET / (VANI Live)", "GET /console", "GET /health", "GET /api/samples", "GET /context/:role/:glid[?format=json]", "POST /events", "POST /api/emit", "POST /api/reset", "GET /metrics", "POST /bot/start", "POST /bot/:id/turn", "POST /bot/:id/end", "GET /voice/status", "POST /voice/stt", "POST /voice/tts", "GET /sarvam/context?glid=", "POST /sarvam/meeting", "POST /sarvam/callback", "POST /sarvam/dnc", "POST /sarvam/end", "GET /sarvam/runtime/*", "GET /sarvam/config", "GET|POST /sarvam/test-seller"] });
+      return send(res, 404, { error: "not found", routes: ["GET / (VANI Smriti)", "GET /console", "GET /health", "GET /api/samples", "GET /context/:role/:glid[?format=json]", "POST /events", "POST /api/emit", "POST /api/reset", "GET /metrics", "POST /bot/start", "POST /bot/:id/turn", "POST /bot/:id/end", "GET /voice/status", "POST /voice/stt", "POST /voice/tts", "GET /sarvam/context?glid=", "POST /sarvam/meeting", "POST /sarvam/callback", "POST /sarvam/dnc", "POST /sarvam/end", "GET /sarvam/runtime/*", "GET /sarvam/config", "GET|POST /sarvam/test-seller"] });
     } catch (e) {
       return send(res, e.status || 500, { error: e.message });
     }
   });
-  server.listen(port, () => process.stderr.write(`  context service on http://localhost:${port}  (clock ${clock}${llm ? ", LLM phrasing on" : ""})\n  VANI Live: http://localhost:${port}/   ·   console: http://localhost:${port}/console\n`));
+  server.listen(port, () => process.stderr.write(`  context service on http://localhost:${port}  (clock ${clock}${llm ? ", LLM phrasing on" : ""})\n  VANI Smriti: http://localhost:${port}/   ·   console: http://localhost:${port}/console\n`));
   return server;
 }

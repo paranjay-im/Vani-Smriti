@@ -1,10 +1,12 @@
-# VANI with memory: a context layer for IndiaMART's seller voice agent
+# VANI Smriti: a memory layer for IndiaMART's seller voice agent
+
+*Smriti (स्मृति) means memory.*
 
 **Hackathon problem statement 02: Global Context.**
 
 We build **one memory per seller** from IndiaMART's 11 data sources. The memory is a Neo4j graph that we render into a short Markdown file (`seller.md`, at most 700 tokens). A **Sarvam voice agent (VANI)** reads that file before it speaks. While it talks, it writes the outcome back into the graph, so the file is rebuilt during the call.
 
-The project ships as one local web page, **VANI Live** (`http://localhost:8787/`). You call the agent from the browser through Sarvam's Web SDK and watch everything the memory does while you talk:
+The project ships as one local web page, **VANI Smriti** (`http://localhost:8787/`). You call the agent from the browser through Sarvam's Web SDK and watch everything the memory does while you talk:
 - the context the agent received
 - every tool call
 - the `seller.md` diff
@@ -13,7 +15,7 @@ The project ships as one local web page, **VANI Live** (`http://localhost:8787/`
 
 | | |
 |---|---|
-| Main page | **VANI Live** at `http://localhost:8787/` (local only) |
+| Main page | **VANI Smriti** at `http://localhost:8787/` (local only) |
 | Sarvam agent | `VANI-Seller-6921b562-b28e`, dashboard name "VANI Seller Bot", committed **version 8** |
 | Agent on the platform | https://agents.sarvam.ai/samvaad/build/update-agent/VANI-Seller-6921b562-b28e |
 | Graph | Neo4j 5.26 Community (Docker): about 432,000 nodes and 536,000 relationships |
@@ -38,7 +40,7 @@ The project ships as one local web page, **VANI Live** (`http://localhost:8787/`
 9. [Why Neo4j](#9-why-neo4j)
 10. [From graph to `seller.md`](#10-from-graph-to-sellermd)
 11. [The Sarvam voice agent](#11-the-sarvam-voice-agent)
-12. [VANI Live, panel by panel](#12-vani-live-panel-by-panel)
+12. [VANI Smriti, panel by panel](#12-vani-smriti-panel-by-panel)
 13. [One call, end to end](#13-one-call-end-to-end)
 14. [HTTP routes](#14-http-routes)
 15. [Configuration reference](#15-configuration-reference)
@@ -124,7 +126,7 @@ flowchart LR
     REN --> MD[out/sellers/glid.md<br/>≤ 700 tokens]
   end
   subgraph Live["During a call"]
-    BR[Browser: VANI Live<br/>Sarvam Web SDK] <-->|audio, WebSocket| SV[Sarvam cloud<br/>VANI agent]
+    BR[Browser: VANI Smriti<br/>Sarvam Web SDK] <-->|audio, WebSocket| SV[Sarvam cloud<br/>VANI agent]
     SV -->|tools over HTTPS| TUN[Cloudflare tunnel]
     TUN --> SRV[context service<br/>node cli.js serve]
     SRV <--> NEO
@@ -141,7 +143,7 @@ flowchart LR
 | Graph store | Neo4j in production mode, or an in-memory graph (same interface) | `src/store/neo.js`, `src/store/memory.js`, `src/graph.js` |
 | Renderer | turns one seller's slice of the graph into `seller.md` | `src/render.js` |
 | Context service | HTTP server: the agent's tools, the live feed, the page | `src/server.js`, `src/sarvam.js`, `src/live.js` |
-| VANI Live | the page at `/`: Web SDK call plus live panels | `src/live.html`, `src/vendor/sarvam-sdk.js`, `src/graphdiff.js`, `src/viz.js` |
+| VANI Smriti | the page at `/`: Web SDK call plus live panels | `src/live.html`, `src/vendor/sarvam-sdk.js`, `src/graphdiff.js`, `src/viz.js` |
 | Voice agent | runs on Sarvam's platform, reads the memory, calls the tools | Sarvam workspace; prompt in `sarvam/assistant_prompt.md` |
 | Tunnel | public HTTPS URL to the local service, so Sarvam can reach it | `npm run tunnel` (Cloudflare quick tunnel) |
 
@@ -152,7 +154,7 @@ There are three separate connections. Knowing which is which makes every setup p
 ```text
                 (1) page + live feed (local)                (2) signed URL (local → Sarvam API)
  Browser  ◄──────────────────────────────────►  context service  ──────────────────────────────►  apps.sarvam.ai
- (VANI Live)     http://localhost:8787/                :8787          GET …/apps/{app}/url  + X-API-Key
+ (VANI Smriti)     http://localhost:8787/                :8787          GET …/apps/{app}/url  + X-API-Key
     │                                                    ▲
     │ (1b) audio: WebSocket straight to Sarvam            │ (3) agent tools: HTTPS from Sarvam's cloud
     └───────────────────────────────────►  Sarvam cloud ──┘     https://<tunnel>/sarvam/context, /request, …
@@ -208,7 +210,7 @@ The alternative to a quick tunnel is any public HTTPS URL that forwards to port 
 ---
 ## 5. Setup, step by step
 
-This is the complete setup for the main offering: **VANI Live with a real voice call, on Neo4j**. Follow the steps in order; each ends with a check. Budget about 30 minutes the first time. Most of that is creating the Sarvam agent if you don't use ours.
+This is the complete setup for the main offering: **VANI Smriti with a real voice call, on Neo4j**. Follow the steps in order; each ends with a check. Budget about 30 minutes the first time. Most of that is creating the Sarvam agent if you don't use ours.
 
 All commands run from the `context_layer/` folder. They are written for **bash** (Git Bash on Windows works). Section [5.12](#512-windows-and-powershell) gives the PowerShell forms.
 
@@ -290,7 +292,7 @@ SARVAM_APP_VERSION=8                       # the committed version whose tools p
 SARVAM_AGENTS_API_KEY=<voice agents api key>
 
 # ---- optional ----
-SARVAM_API_KEY=                    # Sarvam speech key (sk_...). NOT used by VANI Live; the agents runtime refuses it
+SARVAM_API_KEY=                    # Sarvam speech key (sk_...). NOT used by VANI Smriti; the agents runtime refuses it
 ```
 
 Where each value comes from:
@@ -362,7 +364,7 @@ npm run serve               # node --max-old-space-size=4096 cli.js serve   (por
 It prints:
 ```text
   context service on http://localhost:8787  (clock 2026-10-10 16:06:19)
-  VANI Live: http://localhost:8787/   ·   console: http://localhost:8787/console
+  VANI Smriti: http://localhost:8787/   ·   console: http://localhost:8787/console
 ```
 
 In Neo4j mode the server connects and starts in seconds; it does not read the CSVs. If the build has not been run, it refuses to start and tells you to run it.
@@ -522,7 +524,7 @@ There are two ways to do it:
 
 > Every time the tunnel restarts, you repeat this section. Restarting only the server needs none of it.
 
-### 5.10 Step 9 — open VANI Live and make the first call
+### 5.10 Step 9 — open VANI Smriti and make the first call
 
 1. Open **http://localhost:8787/** in Chrome. Use `localhost`, not `127.0.0.1` or a LAN IP: browsers allow the microphone on plain HTTP only for `localhost`.
 2. The header should show **store: Neo4j**. The pipeline label should read `VANI · v<your version>`.
@@ -1370,7 +1372,7 @@ Take `POST /sarvam/request {glid, request_type, details}` as an example.
 
 ---
 
-## 12. VANI Live, panel by panel
+## 12. VANI Smriti, panel by panel
 
 The page is `src/live.html`, served at **`/`**. `/live` is kept as an alias for old links. It is plain HTML and JavaScript, with no build step, and loads two scripts:
 - **the Sarvam Web SDK,** `/live/sdk.js`: `sarvam-conv-ai-sdk@0.0.42`, bundled into `src/vendor/sarvam-sdk.js` so it doesn't depend on a CDN
@@ -1554,7 +1556,7 @@ These six are the **only** routes a tunnelled request can reach.
 
 | Route | Purpose |
 |---|---|
-| `GET /` (alias `/live`) | VANI Live |
+| `GET /` (alias `/live`) | VANI Smriti |
 | `GET /live/sdk.js` | the vendored Sarvam Web SDK |
 | `GET /live/events` | the live feed (SSE) |
 | `GET /live/graph?glid=&limit=` | the seller's graph as vis-network nodes and edges, plus the Neo4j Browser link |
@@ -1763,11 +1765,11 @@ context_layer/
 │   │   ├── memory.js            in-memory store (tests, parity)
 │   │   └── files.js             file-only store
 │   ├── sarvam.js                agent routes, context variables, call_reason, tool validation, tunnel guard, SDK proxy (§11)
-│   ├── server.js                HTTP service; serves VANI Live at /
+│   ├── server.js                HTTP service; serves VANI Smriti at /
 │   ├── live.js                  live feed hub (SSE, ring buffer)
 │   ├── graphdiff.js             graph diff per write
 │   ├── viz.js                   the seller's graph for the page
-│   ├── live.html                VANI Live (§12)
+│   ├── live.html                VANI Smriti (§12)
 │   └── vendor/sarvam-sdk.js     Sarvam Web SDK 0.0.42, bundled
 ├── sarvam/assistant_prompt.md   the agent's prompt (§11)
 ├── store/events.jsonl           event log: calls made after the CSV export (§7.7)
@@ -1777,7 +1779,7 @@ context_layer/
 └── submission/                  DEMO_SCRIPT.md, skills.md, sample_outputs/ (incl. 12_replay_session.json)
 ```
 
-The repository also holds earlier exploration that is **not part of this offering**: a simulated bot and test console (`/console`), campaign and prep-card generators, and a freshness benchmark. None of them is needed for VANI Live.
+The repository also holds earlier exploration that is **not part of this offering**: a simulated bot and test console (`/console`), campaign and prep-card generators, and a freshness benchmark. None of them is needed for VANI Smriti.
 
 ---
 
