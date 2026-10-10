@@ -1,0 +1,260 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" font-family="Segoe UI, Helvetica, Arial, sans-serif" role="img" aria-label="VANI Smriti system architecture: 11 data sources are built into a Neo4j context graph, rendered into a 700-token seller.md, read by a Sarvam voice agent at call start through a Cloudflare tunnel, and written back during the call; the VANI Smriti page holds the call through the Sarvam Web SDK and shows every change live.">
+  <defs>
+    <marker id="aV" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#7C3AED"/></marker>
+    <marker id="aI" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#4F46E5"/></marker>
+    <marker id="aM" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#DB2777"/></marker>
+    <marker id="aS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#0284C7"/></marker>
+    <marker id="aO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#EA580C"/></marker>
+  </defs>
+
+  <!-- canvas -->
+  <rect x="0" y="0" width="1600" height="900" fill="#FFFFFF"/>
+  <text x="40" y="50" font-size="28" font-weight="700" fill="#0F172A">VANI Smriti · system architecture</text>
+  <text x="40" y="76" font-size="15" fill="#475569">One memory per seller, built from 11 sources, read by a Sarvam voice agent at call start and written back while it talks.</text>
+
+  <!-- ============ 1 · DATA SOURCES ============ -->
+  <rect x="30" y="100" width="230" height="560" rx="16" fill="#FFF8EB" stroke="#F59E0B" stroke-width="2"/>
+  <text x="45" y="127" font-size="13" font-weight="700" fill="#B45309" letter-spacing="1">1 · DATA SOURCES</text>
+  <g font-size="13">
+    <rect x="45" y="140" width="200" height="50" rx="9" fill="#FFFFFF" stroke="#FCD34D"/>
+    <text x="57" y="160" font-weight="700" fill="#78350F">Seller profile</text>
+    <text x="57" y="179" font-size="11.5" fill="#92400E">5,000 sellers · KYC · catalogue</text>
+    <rect x="45" y="198" width="200" height="50" rx="9" fill="#FFFFFF" stroke="#FCD34D"/>
+    <text x="57" y="218" font-weight="700" fill="#78350F">Enquiries + replies</text>
+    <text x="57" y="237" font-size="11.5" fill="#92400E">33,006 + 17,633 rows</text>
+    <rect x="45" y="256" width="200" height="50" rx="9" fill="#FFFFFF" stroke="#FCD34D"/>
+    <text x="57" y="276" font-weight="700" fill="#78350F">Buyer calls + AI call notes</text>
+    <text x="57" y="295" font-size="11.5" fill="#92400E">19,238 + 5,417 rows</text>
+    <rect x="45" y="314" width="200" height="50" rx="9" fill="#FFFFFF" stroke="#FCD34D"/>
+    <text x="57" y="334" font-weight="700" fill="#78350F">Buy leads bought</text>
+    <text x="57" y="353" font-size="11.5" fill="#92400E">14,852 rows</text>
+    <rect x="45" y="372" width="200" height="50" rx="9" fill="#FFFFFF" stroke="#FCD34D"/>
+    <text x="57" y="392" font-weight="700" fill="#78350F">WhatsApp + chatbot</text>
+    <text x="57" y="411" font-size="11.5" fill="#92400E">130,897 + 83,280 rows</text>
+    <rect x="45" y="430" width="200" height="50" rx="9" fill="#FFFFFF" stroke="#FCD34D"/>
+    <text x="57" y="450" font-weight="700" fill="#78350F">Past VANI calls + turns</text>
+    <text x="57" y="469" font-size="11.5" fill="#92400E">9,657 + 4,920 rows</text>
+    <rect x="45" y="488" width="200" height="50" rx="9" fill="#FFFFFF" stroke="#FCD34D"/>
+    <text x="57" y="508" font-weight="700" fill="#78350F">Executive calls</text>
+    <text x="57" y="527" font-size="11.5" fill="#92400E">2,580 rows</text>
+    <rect x="45" y="550" width="200" height="56" rx="9" fill="#FFFBEB" stroke="#F59E0B" stroke-dasharray="5 4"/>
+    <text x="57" y="571" font-weight="700" fill="#78350F">Event log (live calls)</text>
+    <text x="57" y="592" font-size="11.5" fill="#92400E">store/events.jsonl · replayed</text>
+  </g>
+  <text x="145" y="640" font-size="12" fill="#92400E" text-anchor="middle">11 CSVs · 1 Apr – 2 Oct 2026</text>
+
+  <!-- ============ 2 · BUILD ============ -->
+  <rect x="280" y="100" width="250" height="560" rx="16" fill="#F5F0FF" stroke="#7C3AED" stroke-width="2"/>
+  <text x="295" y="127" font-size="13" font-weight="700" fill="#6D28D9" letter-spacing="1">2 · BUILD  (npm run build)</text>
+  <g font-size="13">
+    <rect x="295" y="140" width="220" height="62" rx="10" fill="#FFFFFF" stroke="#C4B5FD"/>
+    <circle cx="314" cy="160" r="11" fill="#7C3AED"/><text x="314" y="164.5" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">1</text>
+    <text x="333" y="165" font-weight="700" fill="#4C1D95">Read &amp; clean</text>
+    <text x="309" y="189" font-size="11.5" fill="#5B21B6">IST time · phones, emails scrubbed</text>
+    <rect x="295" y="216" width="220" height="62" rx="10" fill="#FFFFFF" stroke="#C4B5FD"/>
+    <circle cx="314" cy="236" r="11" fill="#7C3AED"/><text x="314" y="240.5" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">2</text>
+    <text x="333" y="241" font-weight="700" fill="#4C1D95">Normalise</text>
+    <text x="309" y="265" font-size="11.5" fill="#5B21B6">row → nodes + edges · stable IDs</text>
+    <rect x="295" y="292" width="220" height="62" rx="10" fill="#FFFFFF" stroke="#C4B5FD"/>
+    <circle cx="314" cy="312" r="11" fill="#7C3AED"/><text x="314" y="316.5" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">3</text>
+    <text x="333" y="317" font-weight="700" fill="#4C1D95">Apply (upsert)</text>
+    <text x="309" y="341" font-size="11.5" fill="#5B21B6">merge by ID · index by seller GLID</text>
+    <rect x="295" y="368" width="220" height="62" rx="10" fill="#FFFFFF" stroke="#C4B5FD"/>
+    <circle cx="314" cy="388" r="11" fill="#7C3AED"/><text x="314" y="392.5" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">4</text>
+    <text x="333" y="393" font-weight="700" fill="#4C1D95">Link</text>
+    <text x="309" y="417" font-size="11.5" fill="#5B21B6">buyer call ↔ enquiry within 60 min</text>
+    <rect x="295" y="444" width="220" height="62" rx="10" fill="#FFFFFF" stroke="#C4B5FD"/>
+    <circle cx="314" cy="464" r="11" fill="#7C3AED"/><text x="314" y="468.5" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">5</text>
+    <text x="333" y="469" font-weight="700" fill="#4C1D95">Extract facts</text>
+    <text x="309" y="493" font-size="11.5" fill="#5B21B6">EN + Hinglish rules · expiry · source</text>
+    <rect x="295" y="520" width="220" height="62" rx="10" fill="#FFFFFF" stroke="#C4B5FD"/>
+    <circle cx="314" cy="540" r="11" fill="#7C3AED"/><text x="314" y="544.5" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">6</text>
+    <text x="333" y="545" font-weight="700" fill="#4C1D95">Bulk load</text>
+    <text x="309" y="569" font-size="11.5" fill="#5B21B6">batched CREATE · 5,000 per batch</text>
+  </g>
+  <g stroke="#7C3AED" stroke-width="2" marker-end="url(#aV)">
+    <line x1="405" y1="202" x2="405" y2="214"/><line x1="405" y1="278" x2="405" y2="290"/>
+    <line x1="405" y1="354" x2="405" y2="366"/><line x1="405" y1="430" x2="405" y2="442"/>
+    <line x1="405" y1="506" x2="405" y2="518"/>
+  </g>
+  <text x="405" y="614" font-size="12" fill="#6D28D9" text-anchor="middle">graph built in memory (~4 s),</text>
+  <text x="405" y="632" font-size="12" fill="#6D28D9" text-anchor="middle">then copied to Neo4j (~70 s)</text>
+
+  <!-- sources → build -->
+  <line x1="260" y1="330" x2="278" y2="330" stroke="#7C3AED" stroke-width="3" marker-end="url(#aV)"/>
+
+  <!-- ============ 3 · MEMORY ============ -->
+  <rect x="560" y="100" width="320" height="560" rx="16" fill="#F8FAFC" stroke="#94A3B8" stroke-width="2"/>
+  <text x="575" y="127" font-size="13" font-weight="700" fill="#334155" letter-spacing="1">3 · MEMORY</text>
+  <!-- Neo4j -->
+  <rect x="575" y="138" width="290" height="250" rx="12" fill="#E7F8F4" stroke="#0F9D8A" stroke-width="2"/>
+  <ellipse cx="601" cy="158" rx="14" ry="5" fill="#0F9D8A"/>
+  <path d="M587 158v18c0 3 6 5 14 5s14-2 14-5v-18" fill="#14B8A6" stroke="#0F9D8A"/>
+  <text x="625" y="166" font-size="15" font-weight="700" fill="#0F766E">Neo4j · context graph</text>
+  <text x="625" y="184" font-size="12" fill="#115E59">432K nodes · 536K relationships</text>
+  <rect x="587" y="196" width="266" height="46" rx="8" fill="#EAF2FC" stroke="#2F6DB5"/>
+  <text x="599" y="214" font-size="11.5" font-weight="700" fill="#2F6DB5" letter-spacing=".5">LONG-TERM · who someone is</text>
+  <text x="599" y="233" font-size="11.5" fill="#1E3A5F">Seller · Buyer · Product · Category</text>
+  <rect x="587" y="250" width="266" height="46" rx="8" fill="#E8F6EE" stroke="#18744C"/>
+  <text x="599" y="268" font-size="11.5" font-weight="700" fill="#18744C" letter-spacing=".5">SHORT-TERM · what happened</text>
+  <text x="599" y="287" font-size="11.5" fill="#14532D">Enquiry · Call · WhatsApp · VaniSession</text>
+  <rect x="587" y="304" width="266" height="46" rx="8" fill="#FCECE8" stroke="#B5462F"/>
+  <text x="599" y="322" font-size="11.5" font-weight="700" fill="#B5462F" letter-spacing=".5">REASONING · what we concluded</text>
+  <text x="599" y="341" font-size="11.5" fill="#7F1D1D">Fact · Decision → linked to their source</text>
+  <text x="720" y="374" font-size="11.5" fill="#0F766E" text-anchor="middle">indexed by seller GLID · one MERGE per write</text>
+  <!-- Renderer -->
+  <rect x="575" y="412" width="290" height="150" rx="12" fill="#EEF0FF" stroke="#4F46E5" stroke-width="2"/>
+  <text x="590" y="436" font-size="14" font-weight="700" fill="#4338CA">Renderer · src/render.js</text>
+  <g font-size="12" fill="#3730A3">
+    <text x="590" y="459">• hydrate one seller in one read</text>
+    <text x="590" y="478">• lookback windows · active facts</text>
+    <text x="590" y="497">• rank open loops → call_reason</text>
+    <text x="590" y="516">• stats · fit within 700 tokens</text>
+    <text x="590" y="535">• atomic write (temp file + rename)</text>
+  </g>
+  <!-- seller.md -->
+  <path d="M590 582h22l8 8v42h-30z" fill="#FFFFFF" stroke="#4F46E5" stroke-width="1.5"/>
+  <path d="M612 582v8h8" fill="none" stroke="#4F46E5" stroke-width="1.5"/>
+  <rect x="575" y="578" width="290" height="66" rx="12" fill="none" stroke="#4F46E5" stroke-dasharray="5 4"/>
+  <text x="632" y="604" font-size="13.5" font-weight="700" fill="#312E81" font-family="Consolas, Menlo, monospace">sellers/&lt;glid&gt;.md</text>
+  <text x="632" y="625" font-size="12" fill="#3730A3">5,000 files · median 420 tokens</text>
+  <!-- inside memory arrows -->
+  <line x1="720" y1="388" x2="720" y2="410" stroke="#4F46E5" stroke-width="2.5" marker-end="url(#aI)"/>
+  <line x1="720" y1="562" x2="720" y2="576" stroke="#4F46E5" stroke-width="2.5" marker-end="url(#aI)"/>
+
+  <!-- build → Neo4j -->
+  <path d="M515 551H545V300H573" fill="none" stroke="#7C3AED" stroke-width="3" marker-end="url(#aV)"/>
+
+  <!-- ============ 4 · CONTEXT SERVICE ============ -->
+  <rect x="910" y="100" width="250" height="560" rx="16" fill="#FFF3EA" stroke="#EA580C" stroke-width="2"/>
+  <text x="925" y="127" font-size="13" font-weight="700" fill="#C2410C" letter-spacing="1">4 · CONTEXT SERVICE</text>
+  <text x="925" y="145" font-size="12" fill="#9A3412">Node.js · localhost:8787</text>
+  <g font-size="13">
+    <rect x="925" y="156" width="220" height="70" rx="10" fill="#FFFFFF" stroke="#FDBA74"/>
+    <text x="937" y="176" font-weight="700" fill="#7C2D12">Agent tools (6 routes)</text>
+    <text x="937" y="195" font-size="11.5" fill="#9A3412">/sarvam/context · request · meeting</text>
+    <text x="937" y="212" font-size="11.5" fill="#9A3412">callback · dnc · end</text>
+    <rect x="925" y="236" width="220" height="58" rx="10" fill="#FFFFFF" stroke="#FDBA74"/>
+    <text x="937" y="256" font-weight="700" fill="#7C2D12">Tunnel guard</text>
+    <text x="937" y="275" font-size="11.5" fill="#9A3412">only these 6 · X-GC-Token required</text>
+    <rect x="925" y="304" width="220" height="58" rx="10" fill="#FFFFFF" stroke="#FDBA74"/>
+    <text x="937" y="324" font-weight="700" fill="#7C2D12">ingest()</text>
+    <text x="937" y="343" font-size="11.5" fill="#9A3412">log event → Neo4j → re-render</text>
+    <rect x="925" y="372" width="220" height="58" rx="10" fill="#FFFFFF" stroke="#FDBA74"/>
+    <text x="937" y="392" font-weight="700" fill="#7C2D12">Web SDK proxy</text>
+    <text x="937" y="411" font-size="11.5" fill="#9A3412">/sarvam/runtime/* adds the API key</text>
+    <rect x="925" y="440" width="220" height="58" rx="10" fill="#FFFFFF" stroke="#FDBA74"/>
+    <text x="937" y="460" font-weight="700" fill="#7C2D12">Live feed (SSE)</text>
+    <text x="937" y="479" font-size="11.5" fill="#9A3412">tools · md diff · graph diff · end</text>
+    <rect x="925" y="508" width="220" height="58" rx="10" fill="#FFFFFF" stroke="#FDBA74"/>
+    <text x="937" y="528" font-weight="700" fill="#7C2D12">VANI Smriti page</text>
+    <text x="937" y="547" font-size="11.5" fill="#9A3412">served at / (local only)</text>
+  </g>
+  <text x="1035" y="602" font-size="12" fill="#9A3412" text-anchor="middle">writes are serialised:</text>
+  <text x="1035" y="620" font-size="12" fill="#9A3412" text-anchor="middle">one Neo4j transaction per tool call</text>
+
+  <!-- service ↔ memory -->
+  <path d="M923 196H867" fill="none" stroke="#4F46E5" stroke-width="2.5" marker-end="url(#aI)"/>
+  <path d="M867 612H905V218H923" fill="none" stroke="#4F46E5" stroke-width="2.5" marker-end="url(#aI)"/>
+  <path d="M923 333H867" fill="none" stroke="#DB2777" stroke-width="2.5" marker-end="url(#aM)"/>
+
+  <!-- ============ TUNNEL ============ -->
+  <rect x="1180" y="150" width="70" height="200" rx="35" fill="#FFF4E5" stroke="#F38020" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="1215" y="295" font-size="13" font-weight="700" fill="#C2410C" text-anchor="middle" transform="rotate(-90 1215 295)">Cloudflare tunnel</text>
+  <text x="1215" y="370" font-size="11" fill="#9A3412" text-anchor="middle">public HTTPS</text>
+  <!-- agent tools: Sarvam → tunnel → service -->
+  <path d="M1283 205H1147" fill="none" stroke="#DB2777" stroke-width="3" marker-end="url(#aM)"/>
+  <path d="M1147 225H1283" fill="none" stroke="#DB2777" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#aM)"/>
+
+  <!-- ============ 5 · SARVAM CLOUD ============ -->
+  <rect x="1270" y="100" width="300" height="300" rx="16" fill="#FDEEF6" stroke="#DB2777" stroke-width="2"/>
+  <text x="1285" y="127" font-size="13" font-weight="700" fill="#BE185D" letter-spacing="1">5 · SARVAM CLOUD</text>
+  <rect x="1285" y="138" width="270" height="124" rx="10" fill="#FFFFFF" stroke="#F9A8D4"/>
+  <text x="1297" y="159" font-size="14" font-weight="700" fill="#831843">VANI voice agent</text>
+  <g font-size="11.5" fill="#9D174D">
+    <text x="1297" y="179">STT → LLM → TTS · Hindi, English, Telugu</text>
+    <text x="1297" y="197">prompt + seller_context + call_reason</text>
+    <text x="1297" y="215">on start: load_seller_context</text>
+    <text x="1297" y="233">during call: request · meeting · callback · dnc</text>
+    <text x="1297" y="251">on end: save_call_outcome</text>
+  </g>
+  <rect x="1285" y="272" width="270" height="52" rx="10" fill="#FFFFFF" stroke="#F9A8D4"/>
+  <text x="1297" y="293" font-size="13" font-weight="700" fill="#831843">Runtime API</text>
+  <text x="1297" y="312" font-size="11.5" fill="#9D174D">issues the signed WebSocket URL</text>
+  <rect x="1285" y="334" width="270" height="52" rx="10" fill="#FFFFFF" stroke="#F9A8D4"/>
+  <text x="1297" y="355" font-size="13" font-weight="700" fill="#831843">Post-call extraction</text>
+  <text x="1297" y="374" font-size="11.5" fill="#9D174D">outcome · sentiment · callback time</text>
+
+  <!-- proxy: service → Sarvam runtime API (direct HTTPS, not the tunnel) -->
+  <path d="M1147 401H1262V298H1283" fill="none" stroke="#0284C7" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#aS)"/>
+
+  <!-- ============ 6 · BROWSER ============ -->
+  <rect x="1270" y="430" width="300" height="230" rx="16" fill="#E8F5FD" stroke="#0284C7" stroke-width="2"/>
+  <text x="1285" y="457" font-size="13" font-weight="700" fill="#0369A1" letter-spacing="1">6 · BROWSER · VANI SMRITI</text>
+  <rect x="1285" y="468" width="270" height="52" rx="10" fill="#FFFFFF" stroke="#7DD3FC"/>
+  <text x="1297" y="489" font-size="13" font-weight="700" fill="#0C4A6E">Sarvam Web SDK</text>
+  <text x="1297" y="508" font-size="11.5" fill="#075985">seller's mic ⇄ VANI's voice, live</text>
+  <rect x="1285" y="528" width="270" height="118" rx="10" fill="#FFFFFF" stroke="#7DD3FC"/>
+  <g font-size="12" fill="#075985">
+    <text x="1297" y="549">• conversation + tool calls</text>
+    <text x="1297" y="569">• agent's memory · open loops</text>
+    <text x="1297" y="589">• write-back pipeline (ms per step)</text>
+    <text x="1297" y="609">• seller.md diff · Neo4j graph diff</text>
+    <text x="1297" y="629">• call report · next call's opening</text>
+  </g>
+  <!-- audio: browser ⇄ Sarvam -->
+  <line x1="1420" y1="403" x2="1420" y2="427" stroke="#0284C7" stroke-width="4" marker-start="url(#aS)" marker-end="url(#aS)"/>
+  <!-- live feed: service → page -->
+  <path d="M1147 469H1232V580H1268" fill="none" stroke="#EA580C" stroke-width="2.5" stroke-dasharray="7 4" marker-end="url(#aO)"/>
+  <!-- page served: browser ↔ service -->
+  <path d="M1268 620H1196V537H1147" fill="none" stroke="#0284C7" stroke-width="2" marker-end="url(#aS)"/>
+
+  <!-- ============ step badges on the diagram ============ -->
+  <g font-size="12" font-weight="700" text-anchor="middle" fill="#FFFFFF">
+    <circle cx="1205" cy="413" r="11" fill="#0284C7"/><text x="1205" y="417.5">1</text>
+    <circle cx="1444" cy="415" r="11" fill="#0284C7"/><text x="1444" y="419.5">2</text>
+    <circle cx="1170" cy="191" r="11" fill="#DB2777"/><text x="1170" y="195.5">3</text>
+    <circle cx="889" cy="182" r="11" fill="#4F46E5"/><text x="889" y="186.5">4</text>
+    <circle cx="1530" cy="159" r="11" fill="#DB2777"/><text x="1530" y="163.5">5</text>
+    <circle cx="1268" cy="191" r="11" fill="#DB2777"/><text x="1268" y="195.5">6</text>
+    <circle cx="889" cy="319" r="11" fill="#DB2777"/><text x="889" y="323.5">7</text>
+    <circle cx="1232" cy="455" r="11" fill="#EA580C"/><text x="1232" y="459.5">8</text>
+    <circle cx="1170" cy="240" r="11" fill="#DB2777"/><text x="1170" y="244.5">9</text>
+  </g>
+
+  <!-- ============ CALL FLOW + LEGEND ============ -->
+  <rect x="30" y="684" width="1100" height="200" rx="16" fill="#F8FAFC" stroke="#CBD5E1"/>
+  <text x="48" y="711" font-size="13" font-weight="700" fill="#334155" letter-spacing="1">ONE CALL, STEP BY STEP</text>
+  <g font-size="12.5" fill="#1E293B">
+    <circle cx="58" cy="736" r="10" fill="#0284C7"/><text x="58" y="740.5" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle">1</text>
+    <text x="76" y="741">Page asks the server for a signed URL; the server adds the API key</text>
+    <circle cx="58" cy="764" r="10" fill="#0284C7"/><text x="58" y="768.5" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle">2</text>
+    <text x="76" y="769">Browser ⇄ Sarvam: live audio over WebSocket, with the seller's GLID</text>
+    <circle cx="58" cy="792" r="10" fill="#DB2777"/><text x="58" y="796.5" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle">3</text>
+    <text x="76" y="797">Call starts: agent → tunnel → GET /sarvam/context</text>
+    <circle cx="58" cy="820" r="10" fill="#4F46E5"/><text x="58" y="824.5" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle">4</text>
+    <text x="76" y="825">Service reads the seller from Neo4j and renders seller.md (~140 ms)</text>
+    <circle cx="58" cy="848" r="10" fill="#DB2777"/><text x="58" y="852.5" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle">5</text>
+    <text x="76" y="853">VANI opens with call_reason, e.g. "a buyer from Patiala is waiting…"</text>
+    <circle cx="608" cy="736" r="10" fill="#DB2777"/><text x="608" y="740.5" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle">6</text>
+    <text x="626" y="741">Seller agrees: agent → tunnel → POST /sarvam/request (X-GC-Token)</text>
+    <circle cx="608" cy="764" r="10" fill="#DB2777"/><text x="608" y="768.5" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle">7</text>
+    <text x="626" y="769">New Fact + VaniSession in one Neo4j transaction; file re-rendered (&lt; 200 ms)</text>
+    <circle cx="608" cy="792" r="10" fill="#EA580C"/><text x="608" y="796.5" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle">8</text>
+    <text x="626" y="797">Live feed pushes the tool call, md diff and graph diff to the page</text>
+    <circle cx="608" cy="820" r="10" fill="#DB2777"/><text x="608" y="824.5" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle">9</text>
+    <text x="626" y="825">Call ends: transcript saved; the next call opens with the follow-up</text>
+  </g>
+
+  <rect x="1150" y="684" width="420" height="200" rx="16" fill="#F8FAFC" stroke="#CBD5E1"/>
+  <text x="1168" y="711" font-size="13" font-weight="700" fill="#334155" letter-spacing="1">LEGEND</text>
+  <g font-size="12" fill="#1E293B">
+    <line x1="1168" y1="736" x2="1208" y2="736" stroke="#7C3AED" stroke-width="3" marker-end="url(#aV)"/><text x="1218" y="740">build (offline, npm run build)</text>
+    <line x1="1168" y1="760" x2="1208" y2="760" stroke="#4F46E5" stroke-width="2.5" marker-end="url(#aI)"/><text x="1218" y="764">read the memory / render the file</text>
+    <line x1="1168" y1="784" x2="1208" y2="784" stroke="#DB2777" stroke-width="3" marker-end="url(#aM)"/><text x="1218" y="788">agent tool calls (through the tunnel)</text>
+    <line x1="1168" y1="808" x2="1208" y2="808" stroke="#0284C7" stroke-width="3" marker-end="url(#aS)"/><text x="1218" y="812">browser: audio, page, SDK sign-in</text>
+    <line x1="1168" y1="832" x2="1208" y2="832" stroke="#EA580C" stroke-width="2.5" stroke-dasharray="7 4" marker-end="url(#aO)"/><text x="1218" y="836">live feed to the page (SSE)</text>
+    <rect x="1168" y="851" width="14" height="14" rx="3" fill="#2F6DB5"/><rect x="1186" y="851" width="14" height="14" rx="3" fill="#18744C"/><rect x="1204" y="851" width="14" height="14" rx="3" fill="#B5462F"/>
+    <text x="1228" y="863">memory tiers: long-term · short-term · reasoning</text>
+  </g>
+</svg>
